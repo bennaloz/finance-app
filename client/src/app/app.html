@@ -1,1 +1,7 @@
+@if (sw.updateReady()) {
+  <div class="update-banner" role="alert">
+    <span><i class="ti ti-rocket" aria-hidden="true"></i> Nuova versione disponibile</span>
+    <button type="button" (click)="sw.applyUpdate()">Aggiorna</button>
+  </div>
+}
 <router-outlet />
