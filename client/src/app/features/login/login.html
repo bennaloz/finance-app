@@ -1,0 +1,43 @@
+<div class="login-wrap">
+  <div class="login-brand">
+    <i class="ti ti-wallet logo" aria-hidden="true"></i>
+    <h1>CasaFinanze</h1>
+    <p>{{ mode() === 'login' ? 'Accedi al conto di famiglia' : 'Crea un nuovo conto di famiglia' }}</p>
+  </div>
+
+  <div class="form-card">
+    @if (error()) {
+      <div class="login-error">{{ error() }}</div>
+    }
+
+    @if (mode() === 'register') {
+      <div class="form-row">
+        <label>Nome (chi sei)</label>
+        <input type="text" [(ngModel)]="displayName" placeholder="es. Riccardo" autocomplete="name">
+      </div>
+      <div class="form-row">
+        <label>Nome famiglia</label>
+        <input type="text" [(ngModel)]="householdName" placeholder="es. Casa Rossi">
+      </div>
+    }
+
+    <div class="form-row">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" placeholder="nome@email.it" autocomplete="email" inputmode="email">
+    </div>
+    <div class="form-row">
+      <label>Password</label>
+      <input type="password" [(ngModel)]="password" placeholder="••••••••" autocomplete="current-password"
+             (keyup.enter)="submit()">
+    </div>
+
+    <button class="btn-primary" (click)="submit()" [disabled]="busy()">
+      {{ busy() ? 'Attendere…' : (mode() === 'login' ? 'Accedi' : 'Crea conto') }}
+    </button>
+
+    <div class="login-switch">
+      {{ mode() === 'login' ? 'Non hai un conto?' : 'Hai già un conto?' }}
+      <button type="button" (click)="toggle()">{{ mode() === 'login' ? 'Registrati' : 'Accedi' }}</button>
+    </div>
+  </div>
+</div>

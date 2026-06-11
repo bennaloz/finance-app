@@ -1,0 +1,36 @@
+<div class="screen">
+  <div class="section-title" style="padding:0 .25rem">Andamento ultimi 6 mesi</div>
+  <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.5rem">Uscite registrate per mese · linea = entrate</div>
+
+  <div class="previsione-card">
+    @let ch = chart();
+    <svg [attr.viewBox]="'0 0 ' + ch.W + ' ' + ch.H" width="100%" role="img" aria-label="Andamento uscite ultimi 6 mesi">
+      @if (ch.lineY !== null) {
+        <line [attr.x1]="ch.padL" [attr.y1]="ch.lineY" [attr.x2]="ch.W - ch.padR" [attr.y2]="ch.lineY" stroke="#E07A2F" stroke-width="1" stroke-dasharray="4 3"></line>
+      }
+      @for (b of ch.bars; track $index) {
+        <rect [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="3" [attr.fill]="b.over ? '#E24B4A' : '#2D7D6F'"></rect>
+        @if (b.showVal) {
+          <text [attr.x]="b.cx" [attr.y]="b.valY" text-anchor="middle" font-size="9" style="fill:var(--color-text-secondary)">{{ b.valLabel }}</text>
+        }
+        <text [attr.x]="b.cx" [attr.y]="b.labelY" text-anchor="middle" font-size="9" style="fill:var(--color-text-secondary)">{{ b.label }}</text>
+      }
+    </svg>
+  </div>
+
+  <div class="section-title" style="padding:0 .25rem">Ripartizione per categoria</div>
+  <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.5rem">Mese corrente (incl. previste)</div>
+
+  <div class="form-card">
+    @if (catRows().length === 0) {
+      <div class="empty-state" style="padding:1rem"><i class="ti ti-chart-pie" aria-hidden="true"></i><p>Nessuna spesa questo mese</p></div>
+    } @else {
+      @for (r of catRows(); track r.label) {
+        <div style="margin-bottom:.6rem">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>{{ r.label }}</span><strong style="font-variant-numeric:tabular-nums">{{ fmtDec(r.total) }}</strong></div>
+          <div style="height:8px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden"><div [style.height.%]="100" [style.width.%]="r.pct" [style.background]="r.color" style="border-radius:4px"></div></div>
+        </div>
+      }
+    }
+  </div>
+</div>

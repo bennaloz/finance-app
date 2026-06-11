@@ -1,0 +1,83 @@
+<div class="screen">
+  <div class="form-card">
+    <div class="form-row">
+      <label>Reddito netto Riccardo (€/mese)</label>
+      <input type="number" [(ngModel)]="redditoR" (input)="markTouched()" placeholder="2250" step="1">
+    </div>
+    <div class="form-row">
+      <label>Reddito netto Valentina (€/mese)</label>
+      <input type="number" [(ngModel)]="redditoV" (input)="markTouched()" placeholder="1700" step="1">
+    </div>
+    <div class="form-row">
+      <label>Risparmio programmato mensile (€)</label>
+      <input type="number" [(ngModel)]="risparmio" (input)="markTouched()" placeholder="0" step="1">
+      <div class="hint">Incluso nel conteggio delle uscite comuni</div>
+    </div>
+  </div>
+
+  <div class="section-title" style="padding:0 .25rem">Categorie personalizzate</div>
+  @if (ds.categories().length === 0) {
+    <div class="empty-state" style="padding:.75rem"><p style="font-size:12px">Nessuna categoria personalizzata</p></div>
+  } @else {
+    @for (c of ds.categories(); track c.id) {
+      <div class="log-item">
+        <div>
+          <div style="font-size:13px;font-weight:500">{{ c.label }}</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">{{ c.common ? 'Comune (divisa)' : 'Personale' }}</div>
+        </div>
+        <button class="btn-small ghost" (click)="removeCat(c.id)" aria-label="Rimuovi categoria"><i class="ti ti-trash" aria-hidden="true"></i></button>
+      </div>
+    }
+  }
+  <div class="form-card">
+    <div class="form-row-2">
+      <div class="form-row" style="margin-bottom:.5rem">
+        <label>Nome categoria</label>
+        <input type="text" [(ngModel)]="newCatLabel" placeholder="es. Vacanze">
+      </div>
+      <div class="form-row" style="margin-bottom:.5rem">
+        <label>Tipo</label>
+        <select [(ngModel)]="newCatCommon">
+          <option value="1">Comune (divisa)</option>
+          <option value="0">Personale</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-small primary" (click)="addCat()"><i class="ti ti-plus" aria-hidden="true"></i> Aggiungi categoria</button>
+  </div>
+
+  <div class="section-title" style="padding:0 .25rem">Modello di divisione</div>
+  <div class="model-tabs">
+    @for (k of modelKeys; track k) {
+      <button class="model-tab" [class.active]="pendingModel() === k" (click)="selectModel(k)">
+        {{ k === '5050' ? '50/50' : models[k].label }}
+      </button>
+    }
+  </div>
+  <div class="form-card" style="font-size:13px;color:var(--color-text-secondary);line-height:1.5">{{ modelDesc() }}</div>
+
+  @let pv = preview();
+  <div class="form-card" style="padding:.875rem 1.25rem">
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.03em">Esempio su €{{ pv.ex.toLocaleString('it-IT') }} di spese comuni</div>
+    <div class="split-row"><span>Quota Riccardo</span><strong>{{ fmt(pv.dR) }} ({{ pv.pctR }}%)</strong></div>
+    <div class="split-row" style="border:none"><span>Quota Valentina</span><strong>{{ fmt(pv.dV) }} ({{ pv.pctV }}%)</strong></div>
+  </div>
+
+  <div class="section-title" style="padding:0 .25rem">Storico modelli</div>
+  @if (ds.settings().modelLog.length === 0) {
+    <div class="empty-state" style="padding:.75rem"><p style="font-size:12px">Nessuna modifica registrata</p></div>
+  } @else {
+    @for (l of ds.settings().modelLog; track $index) {
+      <div class="log-item">
+        <div>
+          <div style="font-size:13px;font-weight:500">{{ l.modelLabel }}</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">R: {{ fmt(l.redditoR) }} · V: {{ fmt(l.redditoV) }}</div>
+        </div>
+        <div style="font-size:11px;color:var(--color-text-secondary)">{{ l.date }}</div>
+      </div>
+    }
+  }
+
+  <button class="btn-primary" (click)="save()">Salva impostazioni</button>
+  <button class="btn-secondary" style="margin-top:.75rem" (click)="logout()"><i class="ti ti-logout" aria-hidden="true"></i> Esci@if (auth.user()) { ({{ auth.user()?.displayName }})}</button>
+</div>

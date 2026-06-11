@@ -1,0 +1,15 @@
+<div class="screen">
+  <div class="section-title" style="padding:0 .25rem">Tutte le uscite</div>
+  @if (expenses().length === 0) {
+    <div class="empty-state">
+      <i class="ti ti-receipt" aria-hidden="true"></i>
+      <p>Nessuna uscita registrata<br>per questo mese</p>
+    </div>
+  } @else {
+    <div class="expense-list">
+      @for (e of expenses(); track e.id) {
+        <app-expense-row [e]="e" (pay)="pay($event)" (edit)="edit($event)" (remove)="remove($event)" />
+      }
+    </div>
+  }
+</div>
