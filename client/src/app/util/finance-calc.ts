@@ -69,7 +69,13 @@ export function getProjectedExpenses(mk: string, expenses: Expense[], recurrings
 
   for (const r of recurrings) {
     if (recurringInMonth(r, mk) && !actualRecIds.has(r.id)) {
-      const day = r.chargeDay ? String(Math.min(31, Math.max(1, r.chargeDay))).padStart(2, '0') : '01';
+      let day: string;
+      if (r.chargeDay === 0) {
+        const [y, m] = mk.split('-').map(Number);
+        day = String(new Date(y, m, 0).getDate()).padStart(2, '0');
+      } else {
+        day = r.chargeDay ? String(Math.min(31, Math.max(1, r.chargeDay))).padStart(2, '0') : '01';
+      }
       result.push({ id: `proj_${r.id}_${mk}`, desc: r.desc, amount: r.amount, cat: r.cat, payer: r.payer, date: `${mk}-${day}`, tipo: 'ricorrente', projected: true, recurringId: r.id });
     }
   }

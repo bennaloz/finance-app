@@ -16,6 +16,7 @@ export class ApiService {
 
   getRecurrings() { return this.http.get<Recurring[]>(`${this.base}/api/recurring`); }
   createRecurring(r: Partial<Recurring>) { return this.http.post<Recurring>(`${this.base}/api/recurring`, r); }
+  updateRecurring(id: number, r: Partial<Recurring>) { return this.http.put<Recurring>(`${this.base}/api/recurring/${id}`, r); }
   deleteRecurring(id: number) { return this.http.delete(`${this.base}/api/recurring/${id}`); }
 
   getScheduleds() { return this.http.get<Scheduled[]>(`${this.base}/api/scheduled`); }
