@@ -79,6 +79,10 @@ export class DataStore {
     return this.api.createRecurring(r).pipe(tap(() => { this.reloadRecurrings(); this.loadMonth(); }));
   }
 
+  updateRecurringById(id: number, r: Partial<Recurring>): Observable<Recurring> {
+    return this.api.updateRecurring(id, r).pipe(tap(() => { this.reloadRecurrings(); this.loadMonth(); }));
+  }
+
   deleteRecurringById(id: number): Observable<unknown> {
     return this.api.deleteRecurring(id).pipe(tap(() => { this.reloadRecurrings(); this.loadMonth(); }));
   }

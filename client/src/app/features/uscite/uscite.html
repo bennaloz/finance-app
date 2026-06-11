@@ -13,8 +13,11 @@
     @for (r of ds.recurrings(); track r.id) {
       <div class="rec-item">
         <div class="rec-header"><span class="rec-name">{{ r.desc }}</span><span class="rec-amount">{{ fmtDec(r.amount) }}</span></div>
-        <div class="rec-meta">{{ freqLabel(r.freq) }} · dal {{ r.fromMonth }}@if (r.toMonth) { → {{ r.toMonth }}}@if (r.chargeDay) { · addebito il {{ r.chargeDay }}} · {{ catLabel(r.cat) }}</div>
-        <div style="margin-top:.5rem"><button class="btn-small ghost" (click)="removeRecurring(r.id)"><i class="ti ti-trash" aria-hidden="true"></i> Rimuovi</button></div>
+        <div class="rec-meta">{{ freqLabel(r.freq) }} · dal {{ r.fromMonth }}@if (r.toMonth) { → {{ r.toMonth }}}@if (r.chargeDay === 0) { · addebito l'ultimo giorno} @else if (r.chargeDay) { · addebito il {{ r.chargeDay }}} · {{ catLabel(r.cat) }}</div>
+        <div style="margin-top:.5rem;display:flex;gap:.5rem">
+          <a class="btn-small ghost" style="text-decoration:none" routerLink="/aggiungi" [queryParams]="{ editRec: r.id }"><i class="ti ti-pencil" aria-hidden="true"></i> Modifica</a>
+          <button class="btn-small ghost" (click)="removeRecurring(r.id)"><i class="ti ti-trash" aria-hidden="true"></i> Rimuovi</button>
+        </div>
       </div>
     }
   }
