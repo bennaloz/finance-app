@@ -3,8 +3,8 @@
 [Oo]bj/
 *.user
 
-# SQLite local data
-data/
+# SQLite local data (NB: niente pattern "data/": su Windows è case-insensitive
+# e ignorerebbe anche la cartella sorgente Data/. Bastano i file .db)
 *.db
 *.db-shm
 *.db-wal
