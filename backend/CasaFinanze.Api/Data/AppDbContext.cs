@@ -19,6 +19,7 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.Entity<User>().HasIndex(u => u.Email).IsUnique();
+        b.Entity<Household>().HasIndex(h => h.JoinCode).IsUnique();
         b.Entity<HouseholdSettings>().HasIndex(s => s.HouseholdId).IsUnique();
         // Indici per lo scoping per-household (tutte le query filtrano su HouseholdId).
         b.Entity<Expense>().HasIndex(e => e.HouseholdId);

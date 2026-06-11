@@ -25,7 +25,16 @@ export class Impostazioni {
   pendingModel = signal('5050');
   newCatLabel = signal('');
   newCatCommon = signal('1');
+  copied = signal(false);
   private touched = signal(false);
+
+  copyCode(): void {
+    const code = this.auth.user()?.joinCode;
+    if (!code) return;
+    navigator.clipboard?.writeText(code);
+    this.copied.set(true);
+    setTimeout(() => this.copied.set(false), 2000);
+  }
 
   constructor() {
     // Popola i campi dai settings finché l'utente non inizia a modificarli (come renderImpostazioni).

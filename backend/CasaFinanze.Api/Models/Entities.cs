@@ -6,6 +6,9 @@ public class Household
 {
     public int Id { get; set; }
     public string Name { get; set; } = "Casa";
+    // Codice condiviso che un secondo utente inserisce in fase di registrazione per
+    // unirsi a questa casa invece di crearne una nuova. Univoco.
+    public string JoinCode { get; set; } = "";
     public string MemberAName { get; set; } = "Riccardo";
     public string MemberBName { get; set; } = "Valentina";
     public DateTime CreatedUtc { get; set; }

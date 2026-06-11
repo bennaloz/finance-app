@@ -4,7 +4,7 @@ name: Deploy backend (App Service)
 # Riusa le federated credentials create da Azure (Deployment Center).
 on:
   push:
-    branches: [refactor/dotnet-angular]
+    branches: [main]
     paths:
       - 'backend/**'
       - '.github/workflows/azure-backend.yml'

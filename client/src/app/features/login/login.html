@@ -11,14 +11,29 @@
     }
 
     @if (mode() === 'register') {
+      <div class="model-tabs" style="margin-bottom:1rem">
+        <button type="button" class="model-tab" [class.active]="joinMode() === 'new'" (click)="setJoinMode('new')">Crea una casa</button>
+        <button type="button" class="model-tab" [class.active]="joinMode() === 'join'" (click)="setJoinMode('join')">Ho un codice</button>
+      </div>
+
       <div class="form-row">
         <label>Nome (chi sei)</label>
         <input type="text" [(ngModel)]="displayName" placeholder="es. Riccardo" autocomplete="name">
       </div>
-      <div class="form-row">
-        <label>Nome famiglia</label>
-        <input type="text" [(ngModel)]="householdName" placeholder="es. Casa Rossi">
-      </div>
+
+      @if (joinMode() === 'new') {
+        <div class="form-row">
+          <label>Nome famiglia</label>
+          <input type="text" [(ngModel)]="householdName" placeholder="es. Casa Rossi">
+        </div>
+      } @else {
+        <div class="form-row">
+          <label>Codice casa</label>
+          <input type="text" [(ngModel)]="joinCode" placeholder="es. K7P2QM" autocomplete="off"
+                 autocapitalize="characters" style="text-transform:uppercase">
+          <div class="hint">Chiediti il codice a chi ha già creato la casa (lo trova in Impostazioni)</div>
+        </div>
+      }
     }
 
     <div class="form-row">

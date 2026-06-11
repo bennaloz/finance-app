@@ -7,7 +7,7 @@ import { AuthResponse } from '../models/models';
 const TOKEN_KEY = 'casafinanze_token';
 const USER_KEY = 'casafinanze_user';
 
-interface CurrentUser { email: string; displayName: string; householdId: number; }
+interface CurrentUser { email: string; displayName: string; householdId: number; householdName: string; joinCode: string; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -23,8 +23,8 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.base}/api/auth/login`, { email, password }).pipe(tap(r => this.store(r)));
   }
 
-  register(email: string, password: string, displayName: string, householdName: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.base}/api/auth/register`, { email, password, displayName, householdName }).pipe(tap(r => this.store(r)));
+  register(email: string, password: string, displayName: string, householdName: string, joinCode: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.base}/api/auth/register`, { email, password, displayName, householdName, joinCode }).pipe(tap(r => this.store(r)));
   }
 
   addUser(email: string, password: string, displayName: string): Observable<AuthResponse> {
@@ -40,7 +40,7 @@ export class AuthService {
 
   private store(r: AuthResponse): void {
     this._token.set(r.token);
-    this.user.set({ email: r.email, displayName: r.displayName, householdId: r.householdId });
+    this.user.set({ email: r.email, displayName: r.displayName, householdId: r.householdId, householdName: r.householdName, joinCode: r.joinCode });
     localStorage.setItem(TOKEN_KEY, r.token);
     localStorage.setItem(USER_KEY, JSON.stringify(this.user()));
   }
