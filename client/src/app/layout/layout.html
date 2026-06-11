@@ -1,0 +1,21 @@
+<div id="app">
+  <div class="topbar">
+    <div class="month-nav">
+      <button (click)="ds.changeMonth(-1)" aria-label="Mese precedente"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+      <span>{{ monthLabel() }}</span>
+      <button (click)="ds.changeMonth(1)" aria-label="Mese successivo"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+    </div>
+    <h1>{{ title() }}</h1>
+  </div>
+
+  <router-outlet />
+
+  <nav class="nav" role="navigation" aria-label="Navigazione principale">
+    <a class="nav-btn" routerLink="" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Panoramica"><i class="ti ti-layout-dashboard" aria-hidden="true"></i><span>Home</span></a>
+    <a class="nav-btn" routerLink="movimenti" routerLinkActive="active" aria-label="Movimenti"><i class="ti ti-list" aria-hidden="true"></i><span>Movimenti</span></a>
+    <a class="nav-btn" routerLink="uscite" routerLinkActive="active" aria-label="Uscite"><i class="ti ti-wallet" aria-hidden="true"></i><span>Uscite</span></a>
+    <a class="nav-btn" routerLink="previsione" routerLinkActive="active" aria-label="Previsione"><i class="ti ti-chart-line" aria-hidden="true"></i><span>Previsione</span></a>
+    <a class="nav-btn" routerLink="grafici" routerLinkActive="active" aria-label="Grafici"><i class="ti ti-chart-bar" aria-hidden="true"></i><span>Grafici</span></a>
+    <a class="nav-btn" routerLink="impostazioni" routerLinkActive="active" aria-label="Impostazioni"><i class="ti ti-settings" aria-hidden="true"></i><span>Impostazioni</span></a>
+  </nav>
+</div>

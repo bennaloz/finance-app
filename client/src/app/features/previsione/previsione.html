@@ -1,0 +1,17 @@
+<div class="screen">
+  <div class="section-title" style="padding:0 .25rem">Prossimi 6 mesi</div>
+  <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.75rem">Proiezione basata su ricorrenti + programmate</div>
+
+  @for (c of cards(); track c.label) {
+    <div class="previsione-card" [style.border-color]="c.isCurrent ? 'var(--c-teal)' : null" [style.border-width]="c.isCurrent ? '1px' : null">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
+        <span class="prev-month">{{ c.label }}@if (c.isCurrent) { <span style="font-size:10px;color:var(--c-teal)">(corrente)</span>}</span>
+        @if (c.recCount > 0) { <span class="pill pill-rec">{{ c.recCount }} ric.</span> }
+      </div>
+      <div class="prev-bar-wrap"><div class="prev-bar-fill" [style.width.%]="c.pct" [style.background]="c.barColor"></div></div>
+      <div class="prev-row"><span>Uscite stimate</span><strong>{{ fmt(c.total) }}</strong></div>
+      <div class="prev-row"><span>Entrate</span><strong>{{ fmt(c.totR) }}</strong></div>
+      <div class="prev-surplus" [style.color]="c.surplus >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ c.surplus >= 0 ? '+ ' : '– ' }}{{ fmt(abs(c.surplus)) }}</div>
+    </div>
+  }
+</div>

@@ -1,0 +1,38 @@
+<div class="screen">
+  <a class="btn-primary" style="margin-top:0;margin-bottom:1rem;display:block;text-align:center;text-decoration:none"
+     routerLink="/aggiungi" [queryParams]="{ tipo: 'singola' }"><i class="ti ti-plus" aria-hidden="true"></i> Aggiungi spesa singola</a>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+    <div class="section-title" style="margin:0">Uscite ricorrenti</div>
+    <a class="btn-small primary" style="text-decoration:none" routerLink="/aggiungi" [queryParams]="{ tipo: 'ricorrente' }"><i class="ti ti-plus" aria-hidden="true"></i> Aggiungi</a>
+  </div>
+
+  @if (ds.recurrings().length === 0) {
+    <div class="empty-state" style="padding:1rem"><i class="ti ti-repeat" aria-hidden="true"></i><p>Nessuna uscita ricorrente</p></div>
+  } @else {
+    @for (r of ds.recurrings(); track r.id) {
+      <div class="rec-item">
+        <div class="rec-header"><span class="rec-name">{{ r.desc }}</span><span class="rec-amount">{{ fmtDec(r.amount) }}</span></div>
+        <div class="rec-meta">{{ freqLabel(r.freq) }} · dal {{ r.fromMonth }}@if (r.toMonth) { → {{ r.toMonth }}}@if (r.chargeDay) { · addebito il {{ r.chargeDay }}} · {{ catLabel(r.cat) }}</div>
+        <div style="margin-top:.5rem"><button class="btn-small ghost" (click)="removeRecurring(r.id)"><i class="ti ti-trash" aria-hidden="true"></i> Rimuovi</button></div>
+      </div>
+    }
+  }
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:.75rem 0 .5rem">
+    <div class="section-title" style="margin:0">Uscite programmate</div>
+    <a class="btn-small primary" style="text-decoration:none" routerLink="/aggiungi" [queryParams]="{ tipo: 'programmata' }"><i class="ti ti-plus" aria-hidden="true"></i> Aggiungi</a>
+  </div>
+
+  @if (scheduledSorted().length === 0) {
+    <div class="empty-state" style="padding:1rem"><i class="ti ti-calendar-event" aria-hidden="true"></i><p>Nessuna uscita programmata</p></div>
+  } @else {
+    @for (p of scheduledSorted(); track p.id) {
+      <div class="rec-item" [style.opacity]="p.month < nowMonth ? 0.5 : 1">
+        <div class="rec-header"><span class="rec-name">{{ p.desc }}</span><span class="rec-amount">{{ fmtDec(p.amount) }}</span></div>
+        <div class="rec-meta">{{ p.month }} · {{ catLabel(p.cat) }} · {{ payerLabel(p.payer) }}</div>
+        <div style="margin-top:.5rem"><button class="btn-small ghost" (click)="removeScheduled(p.id)"><i class="ti ti-trash" aria-hidden="true"></i> Rimuovi</button></div>
+      </div>
+    }
+  }
+</div>

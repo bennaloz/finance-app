@@ -1,0 +1,19 @@
+# .NET
+[Bb]in/
+[Oo]bj/
+*.user
+
+# SQLite local data (NB: niente pattern "data/": su Windows è case-insensitive
+# e ignorerebbe anche la cartella sorgente Data/. Bastano i file .db)
+*.db
+*.db-shm
+*.db-wal
+
+# Node / Angular
+node_modules/
+client/dist/
+client/.angular/
+
+# Env / secrets
+*.env
+appsettings.*.local.json
