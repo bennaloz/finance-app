@@ -1,7 +1,6 @@
 # Stato refactor CasaFinanze (.NET + Angular) — handoff
 
 Branch: **`refactor/dotnet-angular`** (la vecchia app vanilla resta su `main` + GitHub Pages, intatta).
-Ultimo commit al momento dell'interruzione: `9e158ab`.
 
 ## Dove siamo arrivati
 
@@ -12,34 +11,26 @@ Ultimo commit al momento dell'interruzione: `9e158ab`.
 | P2 Client Angular (login + 6 schermate, DataStore, logica portata + test) | ✅ |
 | P3 PWA (manifest, service worker, icone, meta iOS) | ✅ |
 | P4 Import dati vecchi | ❌ scartato (non serve) |
-| P5 Deploy GitHub Actions → Azure | 🟡 quasi: backend OK, frontend in debug |
+| P5 Deploy GitHub Actions → Azure | ✅ DONE (2026-06-11) |
 
-## Deploy — situazione attuale
+## Deploy — stato finale
 
-**Backend → Azure App Service `bennaloz-home-finances`** ✅ FUNZIONA
-- Workflow: `.github/workflows/azure-backend.yml` (OIDC, build di `backend/CasaFinanze.Api`).
-- Testato: `POST /api/auth/register` su `https://bennaloz-home-finances.azurewebsites.net` **restituisce il token**.
-- App Settings impostate sull'App Service (con `__`, non `:`): `Jwt__Key`, `Cors__AllowedOrigins__0`, runtime .NET 10 Linux.
+**Backend → Azure App Service `bennaloz-home-finances`** ✅
+- `https://bennaloz-home-finances.azurewebsites.net`, workflow `.github/workflows/azure-backend.yml` (OIDC).
+- App Settings: `Jwt__Key`, `Cors__AllowedOrigins__0 = https://red-ocean-0d5d13003.7.azurestaticapps.net` (senza slash finale!).
 
-**Frontend → Azure Static Web App `bennaloz-home-finances` (host `black-tree-08b383303.7.azurestaticapps.net`)** 🟡 IN DEBUG
-- Workflow: `.github/workflows/azure-static-web-apps-black-tree-08b383303.yml` (builda Angular in `client/`, inietta `apiBaseUrl`, deploya la dist con `skip_app_build`).
-- La build Angular passa; **falliva** il deploy con `BadRequest: "The GitHub action was run in a different branch than the one that the build is requested for"`.
-- Verificato via `az`: la SWA ha `branch = refactor/dotnet-angular`, repo giusto, è l'unica SWA, SKU Free. Il secret `AZURE_STATIC_WEB_APPS_API_TOKEN_BLACK_TREE_08B383303` esiste col nome giusto ed è stato riallineato al token corrente → **non era il token**.
-- **Ultima mossa (commit `9e158ab`, da verificare):** rimosso lo step OIDC `github_id_token` → deploy con il **solo deployment token** (modalità classica), che non fa la validazione di branch via OIDC.
+**Frontend → Azure Static Web App `bennaloz-home-finances`** ✅
+- **Hostname: `https://red-ocean-0d5d13003.7.azurestaticapps.net`** (ricreata il 2026-06-11, il vecchio host black-tree non esiste più).
+- Provider **None**: NON collegata a GitHub. Deploy solo via deployment token, sia da CI sia in locale con `npx @azure/static-web-apps-cli deploy <dist> --env production --deployment-token <token>`.
+- Workflow: `.github/workflows/azure-swa.yml`, secret **`AZURE_STATIC_WEB_APPS_API_TOKEN`** (token: `az staticwebapp secrets list -n bennaloz-home-finances -g rg-home-finance --query properties.apiKey -o tsv`).
+- Verificato end-to-end: sito servito, preflight CORS ok, `POST /api/auth/register` dal nuovo dominio restituisce il token.
 
-## DA FARE quando riprendi (in ordine)
-
-1. **Controlla l'ultimo run della workflow SWA** (Actions → "Azure Static Web Apps CI/CD", commit `9e158ab`):
-   - ✅ se verde → apri `https://black-tree-08b383303.7.azurestaticapps.net`, **registra un account** dalla login: se funziona, frontend↔backend (CORS incluso) è chiuso e P5 è DONE.
-   - ❌ se ancora "different branch" anche senza OIDC → opzioni:
-     - `az staticwebapp update -n bennaloz-home-finances -g rg-home-finance --branch refactor/dotnet-angular` (riscrive la proprietà branch),
-     - oppure ricreare la SWA pulita selezionando il branch refactor.
-2. Se il frontend si apre ma le chiamate API danno **CORS error**: verifica che `Cors__AllowedOrigins__0` sull'App Service sia esattamente `https://black-tree-08b383303.7.azurestaticapps.net` (senza slash finale) e riavvia l'App Service.
-3. Se il backend dà 500 al primo `/api/...`: quasi sempre manca/è errata una App Setting (`Jwt__Key`).
-4. (Opzionale) bump versioni action per togliere il warning "Node.js 20 deprecated".
+### Storia del bug (per memoria)
+La prima SWA (`black-tree-08b383303`) era **corrotta lato servizio**: il deployment token — anche appena rigenerato — veniva rifiutato con *"No matching Static Web App was found or the api key was invalid"*, e `reset-api-key` via CLI dava Bad Request. L'errore "different branch" in CI era un sintomo della stessa risorsa rotta, non un vero problema di branch/OIDC/secret. Fix: delete + create di una SWA pulita **senza** collegamento GitHub.
 
 ## Note utili
-- `az` locale: login con `az login --use-device-code` scegliendo la directory personale (NON il tenant Eurogroup, che richiede MFA e non ha la subscription).
-- Risorse: Resource Group **`rg-home-finance`**, subscription personale free.
-- Dettagli persistenti anche in memoria Claude: vedi `finance-app-deploy`.
+- `az` su questo PC: `C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd` (non in PATH delle shell già aperte). Login già fatto (subscription personale `bennaloz_subscription`).
+- `gh` NON è installato su questo PC (i log delle Actions non sono leggibili via API senza auth).
+- Risorse: Resource Group **`rg-home-finance`**, subscription personale free, West Europe, SKU Free.
 - Sviluppo locale: `dotnet run` in `backend/CasaFinanze.Api` + `npx ng serve` in `client/` (proxy `/api` → :5080).
+- Account di test creato in produzione: `smoke-test-deploy@example.com` (da eliminare se dà fastidio).
