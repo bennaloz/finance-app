@@ -1,10 +1,12 @@
 name: Deploy backend (App Service)
 
-# Pubblica l'API .NET 10 su Azure App Service "bennaloz-home-finances" via OIDC.
-# Riusa le federated credentials create da Azure (Deployment Center).
+# Pubblica l'API .NET 10 su Azure App Service via OIDC (managed identity oidc-msi-bf5d,
+# federated credentials per main e develop, Website Contributor su entrambe le app).
+#   develop -> bennaloz-home-finances-test (test)
+#   main    -> bennaloz-home-finances      (produzione)
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - 'backend/**'
       - '.github/workflows/azure-backend.yml'
@@ -12,7 +14,6 @@ on:
 
 env:
   PROJECT: backend/CasaFinanze.Api/CasaFinanze.Api.csproj
-  APP_NAME: bennaloz-home-finances
 
 jobs:
   build:
@@ -42,6 +43,8 @@ jobs:
     permissions:
       id-token: write   # richiesto per l'OIDC verso Azure
       contents: read
+    env:
+      APP_NAME: ${{ github.ref == 'refs/heads/main' && 'bennaloz-home-finances' || 'bennaloz-home-finances-test' }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4

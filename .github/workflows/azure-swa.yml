@@ -1,22 +1,22 @@
 name: Azure Static Web Apps CI/CD
 
+# Builda Angular e pubblica sulla Static Web App col solo deployment token
+# (le SWA non sono collegate a GitHub, provider None):
+#   develop -> bennaloz-home-finances-test (happy-river), API di test
+#   main    -> bennaloz-home-finances      (red-ocean),   API di produzione
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - main
+    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     permissions:
       contents: read
+    env:
+      IS_PROD: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -30,13 +30,18 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
 
-      - name: Inietta apiBaseUrl di produzione (URL del backend App Service)
+      - name: Inietta apiBaseUrl (backend dell'ambiente)
         working-directory: client
         run: |
+          if [ "$IS_PROD" = "true" ]; then
+            API_URL='${{ vars.API_BASE_URL || 'https://bennaloz-home-finances.azurewebsites.net' }}'
+          else
+            API_URL='${{ vars.API_BASE_URL_TEST || 'https://bennaloz-home-finances-test.azurewebsites.net' }}'
+          fi
           cat > src/environments/environment.ts <<EOF
           export const environment = {
             production: true,
-            apiBaseUrl: '${{ vars.API_BASE_URL || 'https://bennaloz-home-finances.azurewebsites.net' }}',
+            apiBaseUrl: '$API_URL',
           };
           EOF
 
@@ -46,28 +51,14 @@ jobs:
           npm ci
           npm run build
 
-      # Deploy con il solo deployment token: la SWA (red-ocean-0d5d13003) non è
-      # collegata a GitHub (provider None), quindi nessuna validazione di branch.
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ github.ref == 'refs/heads/main' && secrets.AZURE_STATIC_WEB_APPS_API_TOKEN || secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_TEST }}
           action: "upload"
           app_location: "client/dist/client/browser"
           api_location: ""
           output_location: ""
           skip_app_build: true
           skip_api_build: true
-
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request Job
-    steps:
-      - name: Close Pull Request
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          action: "close"
