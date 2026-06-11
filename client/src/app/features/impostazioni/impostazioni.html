@@ -15,6 +15,20 @@
     </div>
   </div>
 
+  @if (auth.user()?.joinCode) {
+    <div class="section-title" style="padding:0 .25rem">Casa condivisa</div>
+    <div class="form-card">
+      <div class="hint" style="margin-bottom:.5rem">Dai questo codice a chi deve unirsi a questa casa: lo inserisce in registrazione (“Ho un codice”) e vedrete gli stessi dati.</div>
+      <div class="split-row" style="border:none;align-items:center">
+        <strong style="font-size:20px;letter-spacing:.15em;font-family:monospace">{{ auth.user()?.joinCode }}</strong>
+        <button class="btn-small primary" (click)="copyCode()">
+          <i class="ti" [class.ti-copy]="!copied()" [class.ti-check]="copied()" aria-hidden="true"></i>
+          {{ copied() ? 'Copiato' : 'Copia' }}
+        </button>
+      </div>
+    </div>
+  }
+
   <div class="section-title" style="padding:0 .25rem">Categorie personalizzate</div>
   @if (ds.categories().length === 0) {
     <div class="empty-state" style="padding:.75rem"><p style="font-size:12px">Nessuna categoria personalizzata</p></div>

@@ -5,6 +5,8 @@ export interface AuthResponse {
   email: string;
   displayName: string;
   householdId: number;
+  householdName: string;
+  joinCode: string;
 }
 
 export interface ModelLogEntry {

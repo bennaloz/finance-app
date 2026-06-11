@@ -13,16 +13,24 @@ export class Login {
   private router = inject(Router);
 
   mode = signal<'login' | 'register'>('login');
+  // In registrazione: 'new' crea una nuova casa, 'join' entra in una casa esistente col codice.
+  joinMode = signal<'new' | 'join'>('new');
   email = signal('');
   password = signal('');
   displayName = signal('');
   householdName = signal('');
+  joinCode = signal('');
   error = signal('');
   busy = signal(false);
 
   toggle(): void {
     this.error.set('');
     this.mode.set(this.mode() === 'login' ? 'register' : 'login');
+  }
+
+  setJoinMode(m: 'new' | 'join'): void {
+    this.error.set('');
+    this.joinMode.set(m);
   }
 
   submit(): void {
@@ -39,8 +47,12 @@ export class Login {
     if (this.mode() === 'login') {
       this.auth.login(this.email().trim(), this.password()).subscribe(done);
     } else {
-      this.auth.register(this.email().trim(), this.password(), this.displayName().trim() || 'Riccardo',
-        this.householdName().trim() || 'Casa').subscribe(done);
+      const joining = this.joinMode() === 'join';
+      this.auth.register(
+        this.email().trim(), this.password(), this.displayName().trim() || 'Riccardo',
+        joining ? '' : (this.householdName().trim() || 'Casa'),
+        joining ? this.joinCode().trim() : '',
+      ).subscribe(done);
     }
   }
 }

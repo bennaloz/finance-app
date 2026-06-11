@@ -1,10 +1,10 @@
 namespace CasaFinanze.Api.Dtos;
 
 // --- Auth ---
-public record RegisterRequest(string Email, string Password, string? DisplayName, string? HouseholdName);
+public record RegisterRequest(string Email, string Password, string? DisplayName, string? HouseholdName, string? JoinCode);
 public record LoginRequest(string Email, string Password);
 public record AddUserRequest(string Email, string Password, string? DisplayName);
-public record AuthResponse(string Token, string Email, string DisplayName, int HouseholdId);
+public record AuthResponse(string Token, string Email, string DisplayName, int HouseholdId, string HouseholdName, string JoinCode);
 
 // --- Settings ---
 public record ModelLogDto(string Date, string Model, string ModelLabel, decimal RedditoR, decimal RedditoV);
