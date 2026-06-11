@@ -1,0 +1,6 @@
+@CasaFinanze.Api_HostAddress = http://localhost:5166
+
+GET {{CasaFinanze.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,19 @@
+# .NET
+[Bb]in/
+[Oo]bj/
+*.user
+
+# SQLite local data
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Node / Angular
+node_modules/
+client/dist/
+client/.angular/
+
+# Env / secrets
+*.env
+appsettings.*.local.json
