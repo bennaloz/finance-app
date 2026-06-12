@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/bennaloz/finance-app/compare/v1.2.0...v1.3.0) (2026-06-12)
+
+
+### Features
+
+* migliorie UX (swipe mese, accordion persistenti, animazioni) ([d1b9615](https://github.com/bennaloz/finance-app/commit/d1b961507bdee7e80012a8dec67827a148515d2f))
+* swipe per cambiare mese e animazioni d'ingresso ([#18](https://github.com/bennaloz/finance-app/issues/18)) ([d86dc17](https://github.com/bennaloz/finance-app/commit/d86dc1774b2981d23b2dc0d5aaba0b0871e357a3))
+
+
+### Bug Fixes
+
+* mantieni aperti gli accordion delle uscite tra le navigazioni ([#17](https://github.com/bennaloz/finance-app/issues/17)) ([6cabadf](https://github.com/bennaloz/finance-app/commit/6cabadf6a403e05375b0312f13e11fd0b69833e7))
+
 ## [1.2.0](https://github.com/bennaloz/finance-app/compare/v1.1.0...v1.2.0) (2026-06-12)
 
 
