@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DataStore } from '../../core/data-store';
 import { catLabel, fmtDec, memberPayerRef, monthKey } from '../../util/finance-calc';
@@ -20,8 +20,9 @@ export class Uscite {
 
   scheduledSorted = computed(() => [...this.ds.scheduleds()].sort((a, b) => a.month.localeCompare(b.month)));
 
-  recOpen = signal(false);
-  schedOpen = signal(false);
+  // Stato accordion nello store: resta aperto tornando dalla modifica di una voce.
+  recOpen = this.ds.usciteRecOpen;
+  schedOpen = this.ds.usciteSchedOpen;
 
   catLabel(id: string): string { return catLabel(id, this.ds.categories(), this.ds.members()); }
   freqLabel(f: string): string { return FREQS[f] ?? f; }
