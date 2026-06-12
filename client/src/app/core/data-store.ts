@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, forkJoin, tap } from 'rxjs';
-import { CustomCategory, DisplayExpense, Expense, Recurring, Scheduled, Settings } from '../models/models';
+import { CustomCategory, DisplayExpense, Expense, Member, Recurring, Scheduled, Settings } from '../models/models';
 import { getProjectedExpenses } from '../util/finance-calc';
 import { ApiService } from './api.service';
 
@@ -15,8 +15,12 @@ export class DataStore {
   recurrings = signal<Recurring[]>([]);
   scheduleds = signal<Scheduled[]>([]);
   categories = signal<CustomCategory[]>([]);
-  settings = signal<Settings>({ redditoR: 0, redditoV: 0, risparmio: 0, model: '5050', modelLog: [] });
+  members = signal<Member[]>([]);
+  settings = signal<Settings>({ risparmio: 0, model: '5050', modelLog: [] });
   loaded = signal(false);
+
+  // Reddito totale del nucleo = somma dei redditi dei membri (sostituisce redditoR+redditoV).
+  totalIncome = computed(() => this.members().reduce((a, m) => a + m.monthlyIncome, 0));
 
   monthKey = computed(() => `${this.year()}-${String(this.month() + 1).padStart(2, '0')}`);
   projected = computed(() => getProjectedExpenses(this.monthKey(), this.expenses(), this.recurrings(), this.scheduleds()));
@@ -36,12 +40,14 @@ export class DataStore {
       scheduleds: this.api.getScheduleds(),
       categories: this.api.getCategories(),
       settings: this.api.getSettings(),
+      members: this.api.getMembers(),
       expenses: this.api.getExpenses(this.monthKey()),
     }).subscribe(r => {
       this.recurrings.set(r.recurrings);
       this.scheduleds.set(r.scheduleds);
       this.categories.set(r.categories);
       this.settings.set(r.settings);
+      this.members.set(r.members);
       this.expenses.set(r.expenses);
       this.loaded.set(true);
     });
@@ -52,6 +58,7 @@ export class DataStore {
   reloadScheduleds(): void { this.api.getScheduleds().subscribe(s => this.scheduleds.set(s)); }
   reloadCategories(): void { this.api.getCategories().subscribe(c => this.categories.set(c)); }
   reloadSettings(): void { this.api.getSettings().subscribe(s => this.settings.set(s)); }
+  reloadMembers(): void { this.api.getMembers().subscribe(m => this.members.set(m)); }
 
   // --- Mutazioni (online-first): scrivono sull'API e ricaricano lo stato interessato. ---
 
@@ -103,7 +110,11 @@ export class DataStore {
     return this.api.deleteCategory(id).pipe(tap(() => this.reloadCategories()));
   }
 
-  saveSettings(s: { redditoR: number; redditoV: number; risparmio: number; model: string; modelLabel?: string }): Observable<Settings> {
+  saveSettings(s: { risparmio: number; model: string; modelLabel?: string }): Observable<Settings> {
     return this.api.updateSettings(s).pipe(tap(r => this.settings.set(r)));
+  }
+
+  updateMemberIncome(id: number, monthlyIncome: number, displayName?: string): Observable<Member> {
+    return this.api.updateMember(id, { monthlyIncome, displayName }).pipe(tap(() => this.reloadMembers()));
   }
 }

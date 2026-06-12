@@ -25,9 +25,7 @@
     <div class="form-row">
       <label>Chi paga</label>
       <select [(ngModel)]="payer">
-        <option value="comune">Conto comune</option>
-        <option value="riccardo">Riccardo</option>
-        <option value="valentina">Valentina</option>
+        @for (o of payerOptions(); track o.id) { <option [value]="o.id">{{ o.label }}</option> }
       </select>
     </div>
 

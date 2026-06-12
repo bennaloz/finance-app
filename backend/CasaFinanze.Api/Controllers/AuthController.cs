@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
             hh = new Household { Name = req.HouseholdName ?? "Casa", JoinCode = await GenerateJoinCode(), CreatedUtc = DateTime.UtcNow };
             _db.Households.Add(hh);
             await _db.SaveChangesAsync();
-            _db.Settings.Add(new HouseholdSettings { HouseholdId = hh.Id, RedditoR = 2250, RedditoV = 1700, Risparmio = 0, Model = "5050" });
+            _db.Settings.Add(new HouseholdSettings { HouseholdId = hh.Id, Risparmio = 0, Model = "5050" });
         }
 
         var user = NewUser(hh.Id, req.Email, req.Password, req.DisplayName);

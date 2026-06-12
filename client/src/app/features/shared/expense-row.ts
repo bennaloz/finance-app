@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { DisplayExpense } from '../../models/models';
 import { DataStore } from '../../core/data-store';
-import { catClassFor, catIcon, catLabel } from '../../util/finance-calc';
+import { catColor, catIcon, catLabel, memberPayerRef } from '../../util/finance-calc';
 import { fmtDec } from '../../util/finance-calc';
 import { PAYERS } from '../../util/i18n';
 
@@ -10,7 +10,7 @@ import { PAYERS } from '../../util/i18n';
   selector: 'app-expense-row',
   template: `
     <div class="expense-row" [style.opacity]="e().projected ? 0.6 : 1">
-      <div class="exp-icon cat-{{ catClass() }}" aria-hidden="true"><i class="ti {{ icon() }}"></i></div>
+      <div class="exp-icon" [style.background]="color() + '22'" [style.color]="color()" aria-hidden="true"><i class="ti {{ icon() }}"></i></div>
       <div class="exp-info">
         <div class="exp-name">
           {{ e().desc }}
@@ -44,9 +44,14 @@ export class ExpenseRow {
   edit = output<DisplayExpense>();
   remove = output<DisplayExpense>();
 
-  catClass = computed(() => catClassFor(this.e().cat));
+  color = computed(() => catColor(this.e().cat, this.ds.categories(), this.ds.members()));
   icon = computed(() => catIcon(this.e().cat, this.ds.categories()));
-  label = computed(() => catLabel(this.e().cat, this.ds.categories()));
-  payer = computed(() => PAYERS[this.e().payer] ?? this.e().payer);
+  label = computed(() => catLabel(this.e().cat, this.ds.categories(), this.ds.members()));
+  payer = computed(() => {
+    const p = this.e().payer;
+    if (PAYERS[p]) return PAYERS[p];
+    const m = this.ds.members().find(x => memberPayerRef(x.id) === p);
+    return m ? m.displayName : p;
+  });
   fmtDec = fmtDec;
 }
