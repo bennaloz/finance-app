@@ -1,7 +1,7 @@
 // Logica di calcolo PORTATA dall'app vanilla (index.html). Funzioni pure,
 // così sono testabili e identiche al comportamento originale.
 
-import { CustomCategory, DisplayExpense, Expense, Member, Recurring, Scheduled, Settings } from '../models/models';
+import { CustomCategory, DisplayExpense, Expense, Member, MemberIncome, Recurring, Scheduled, Settings } from '../models/models';
 import { CAT_COLORS, CAT_ICONS, CAT_LABELS, CAT_FORM_LABELS, memberColor } from './i18n';
 
 export const FREQ_MONTHS: Record<string, number> = { mensile: 1, bimestrale: 2, trimestrale: 3, semestrale: 6, annuale: 12 };
@@ -110,6 +110,77 @@ export function getProjectedExpenses(mk: string, expenses: Expense[], recurrings
     }
   }
   return result;
+}
+
+// Reddito effettivo di un membro in un mese: ultimo override con month <= mk (carry-forward);
+// in mancanza, il reddito base del membro (Member.monthlyIncome, gestito in Impostazioni).
+export function memberIncomeFor(member: Member, mk: string, incomes: MemberIncome[]): number {
+  let best: MemberIncome | null = null;
+  for (const i of incomes) {
+    if (i.userId === member.id && i.month <= mk && (!best || i.month > best.month)) best = i;
+  }
+  return best ? best.amount : member.monthlyIncome;
+}
+
+// Reddito totale del nucleo effettivo nel mese (somma dei redditi effettivi dei membri).
+export function totalIncomeFor(members: Member[], mk: string, incomes: MemberIncome[]): number {
+  return members.reduce((a, m) => a + memberIncomeFor(m, mk, incomes), 0);
+}
+
+// Aggiunge n mesi a una chiave 'yyyy-MM'.
+export function addMonths(mk: string, n: number): string {
+  const [y, m] = mk.split('-').map(Number);   // m = 1..12
+  const idx = y * 12 + (m - 1) + n;
+  return monthKey(Math.floor(idx / 12), idx % 12);
+}
+
+// Previsione del saldo del conto comune, mese per mese.
+export interface MonthForecast {
+  mk: string;
+  startBalance: number;        // saldo a inizio mese
+  income: number;              // entrate del mese (stipendi)
+  outflow: number;             // uscite stimate (reali + proiezioni)
+  endBalance: number;          // saldo proiettato a fine mese (si trascina avanti)
+  disponibileGiroconto: number; // income − outflow: quanto resta da girare sul personale
+}
+
+// Saldo proiettato del conto comune trascinato di mese in mese a partire da un'ANCORA
+// (saldo reale fissato dall'utente, di norma per il mese corrente). Le spese reali in
+// memoria sono in genere solo quelle del mese corrente: per gli altri mesi l'uscita è la
+// sola proiezione di ricorrenti/programmate (riusa getProjectedExpenses, niente duplicati).
+// Senza ancora il saldo parte da 0 (il chiamante segnala "nessun allineamento impostato").
+// `incomeForMonth(mk)` fornisce le entrate del mese: così il reddito può variare mese su mese
+// (redditi per-membro datati con carry-forward, vedi totalIncomeFor).
+export function projectBalance(
+  firstMonth: string,
+  count: number,
+  anchor: { month: string; amount: number } | null,
+  incomeForMonth: (mk: string) => number,
+  realExpenses: Expense[],
+  recurrings: Recurring[],
+  scheduleds: Scheduled[],
+): MonthForecast[] {
+  const lastMonth = addMonths(firstMonth, count - 1);
+  // Se l'ancora è prima del periodo mostrato, parto da lì per trascinare il saldo fin qui.
+  let cursor = anchor && anchor.month < firstMonth ? anchor.month : firstMonth;
+  let balance = anchor && anchor.month <= firstMonth ? anchor.amount : 0;
+  const out: MonthForecast[] = [];
+  while (cursor <= lastMonth) {
+    // L'ancora (ri)allinea il saldo iniziale del proprio mese.
+    if (anchor && anchor.month === cursor) balance = anchor.amount;
+    const income = incomeForMonth(cursor);
+    const real = realExpenses.filter(e => e.date.startsWith(cursor));
+    const outflow = getProjectedExpenses(cursor, real, recurrings, scheduleds)
+      .reduce((a, e) => a + e.amount, 0);
+    const startBalance = balance;
+    const endBalance = startBalance + income - outflow;
+    if (cursor >= firstMonth) {
+      out.push({ mk: cursor, startBalance, income, outflow, endBalance, disponibileGiroconto: income - outflow });
+    }
+    balance = endBalance;
+    cursor = addMonths(cursor, 1);
+  }
+  return out;
 }
 
 // Contributo per singolo membro alle spese comuni del mese.

@@ -1,5 +1,5 @@
-import { computeContrib, getProjectedExpenses, recurringInMonth, catIsCommon } from './finance-calc';
-import { Expense, Member, Recurring, Scheduled, Settings } from '../models/models';
+import { computeContrib, getProjectedExpenses, recurringInMonth, catIsCommon, projectBalance, addMonths, memberIncomeFor, totalIncomeFor } from './finance-calc';
+import { Expense, Member, MemberIncome, Recurring, Scheduled, Settings } from '../models/models';
 
 describe('finance-calc', () => {
   const settings: Settings = { risparmio: 0, model: '5050', modelLog: [] };
@@ -64,6 +64,61 @@ describe('finance-calc', () => {
     expect(r.paid).toBe(100);
     expect(r.saldo).toBe(50);  // ha pagato 100, doveva 50
     expect(v.saldo).toBe(-50);
+  });
+
+  it('addMonths: somma mesi attraversando l\'anno', () => {
+    expect(addMonths('2026-01', 2)).toBe('2026-03');
+    expect(addMonths('2026-11', 3)).toBe('2027-02');
+    expect(addMonths('2026-03', 0)).toBe('2026-03');
+  });
+
+  it('projectBalance: ancora sul mese corrente, saldo che si trascina', () => {
+    const recs: Recurring[] = [{ id: 1, desc: 'Affitto', amount: 500, cat: 'common', payer: 'comune', freq: 'mensile', fromMonth: '2026-01', toMonth: null, chargeDay: 1 }];
+    const f = projectBalance('2026-03', 3, { month: '2026-03', amount: 1000 }, () => 3000, [], recs, []);
+    expect(f.length).toBe(3);
+    // mese 0: 1000 + 3000 − 500 = 3500
+    expect(f[0].startBalance).toBe(1000);
+    expect(f[0].outflow).toBe(500);
+    expect(f[0].endBalance).toBe(3500);
+    expect(f[0].disponibileGiroconto).toBe(2500); // income − outflow
+    // mese 1: parte da 3500 (trascinato)
+    expect(f[1].startBalance).toBe(3500);
+    expect(f[1].endBalance).toBe(6000);
+  });
+
+  it('projectBalance: senza ancora il saldo parte da 0', () => {
+    const f = projectBalance('2026-03', 2, null, () => 3000, [], [], []);
+    expect(f[0].startBalance).toBe(0);
+    expect(f[0].endBalance).toBe(3000); // nessuna uscita
+    expect(f[1].startBalance).toBe(3000);
+  });
+
+  it('projectBalance: ancora nel passato si propaga fino al mese mostrato', () => {
+    const recs: Recurring[] = [{ id: 1, desc: 'Affitto', amount: 500, cat: 'common', payer: 'comune', freq: 'mensile', fromMonth: '2026-01', toMonth: null, chargeDay: 1 }];
+    // ancora a gennaio = 1000; gen/feb aggiungono ciascuno (3000−500)=2500 → marzo parte da 6000
+    const f = projectBalance('2026-03', 1, { month: '2026-01', amount: 1000 }, () => 3000, [], recs, []);
+    expect(f.length).toBe(1);
+    expect(f[0].mk).toBe('2026-03');
+    expect(f[0].startBalance).toBe(6000);
+  });
+
+  it('memberIncomeFor: carry-forward dall\'ultimo override, fallback al reddito base', () => {
+    const incomes: MemberIncome[] = [
+      { id: 1, userId: 1, month: '2026-02', amount: 2500 },
+      { id: 2, userId: 1, month: '2026-04', amount: 1800 },
+    ];
+    const ric = members[0]; // id 1, base 2000
+    expect(memberIncomeFor(ric, '2026-01', incomes)).toBe(2000); // nessun override → base
+    expect(memberIncomeFor(ric, '2026-02', incomes)).toBe(2500); // override del mese
+    expect(memberIncomeFor(ric, '2026-03', incomes)).toBe(2500); // carry-forward da febbraio
+    expect(memberIncomeFor(ric, '2026-05', incomes)).toBe(1800); // carry-forward da aprile
+    expect(memberIncomeFor(members[1], '2026-05', incomes)).toBe(1000); // altro membro → base
+  });
+
+  it('totalIncomeFor: somma i redditi effettivi del mese', () => {
+    const incomes: MemberIncome[] = [{ id: 1, userId: 1, month: '2026-03', amount: 2500 }];
+    expect(totalIncomeFor(members, '2026-03', incomes)).toBe(3500); // 2500 + 1000 base
+    expect(totalIncomeFor(members, '2026-01', incomes)).toBe(3000); // 2000 + 1000 base
   });
 
   it('computeContrib: proporzionale al reddito', () => {

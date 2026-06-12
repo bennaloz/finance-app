@@ -23,26 +23,25 @@ Stato: **decisione del modello in corso**, prima di scrivere codice. Questo file
   bottom-nav NON ha un "Aggiungi" (a `/aggiungi` ci si arriva solo da Uscite).
 - **Chi registra = chi ha pagato** ("chi registra una spesa veloce è anche chi l'ha sostenuta").
 
-## ⚠️ NODO APERTO — da chiarire PRIMA di implementare
+## ✅ NODO RISOLTO (2026-06-12)
 Il quick-add tocca il cuore dell'app: la coppia **categoria + chi paga** determina come la spesa
 viene divisa (`finance-calc.ts` → `computeContrib`; il *saldo* per membro = pagato − dovuto).
 
-Bozza proposta: un'unica scelta per spesa **"Comune / Personale (mia)"**:
+Decisioni prese con l'utente:
+- **Le spese comuni escono SEMPRE dal conto comune.** Quindi il quick-add di una comune può
+  assumere `payer='comune'` senza chiedere chi ha pagato.
+- **Le spese personali NON si tracciano**: i soldi girati sui conti personali sono solo
+  un'uscita residuale del conto comune; poi ognuno spende come vuole.
+- L'**eccezione** vera è l'inverso: una **spesa personale pagata col conto comune**, da
+  attribuire a quel membro. Rimandata: per ora basta registrarla nel **form completo**; niente
+  trattamento speciale nel quick-add.
+
+Bozza scelta quick-add (da implementare quando si riprende): un'unica scelta **"Comune / Personale (mia)"**:
 
 | Scelta | Categoria | Chi paga |
 |---|---|---|
 | Comune | Variabili comuni (`variabile`) | Conto comune (`comune`) |
 | Personale (mia) | Personali mie (`p{ioId}`) | Mio conto (`u{ioId}`) |
-
-**Perché non è ancora deciso** — la domanda vera è: *da dove escono i soldi delle spese comuni?*
-Riccardo stava rispondendo: «Le spese che vanno divise vengono **sempre messe nel conto in comune**,
-però **capita che peschiamo dal conto in comune e poi**…» → **FRASE INTERROTTA**.
-
-➡️ **PRIMA COSA DA FARE: completare questa frase.** Poi:
-- se le comuni escono **sempre** dal conto comune → il binario regge, l'anticipo personale è
-  un'eccezione da fare nel form completo;
-- se **capita spesso di anticipare** una comune col conto personale → il quick-add deve far dire
-  **chi ha pagato** anche per le comuni (è ciò che genera il saldo da pareggiare).
 
 ## Buco tecnico da colmare
 Il client **non sa "quale membro sono io"**: né `AuthResponse` né l'utente salvato hanno l'id del

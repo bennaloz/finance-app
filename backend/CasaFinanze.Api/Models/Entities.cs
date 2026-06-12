@@ -85,6 +85,28 @@ public class Scheduled
     public string Month { get; set; } = "";       // yyyy-MM
 }
 
+// Allineamento del conto comune: saldo reale fissato dall'utente a un dato mese.
+// Punto di ancoraggio da cui la Previsione parte e si trascina in avanti.
+// Non è un conto corrente: è solo l'ancora della previsione (uno per mese).
+public class Alignment
+{
+    public int Id { get; set; }
+    public int HouseholdId { get; set; }
+    public string Month { get; set; } = "";       // yyyy-MM
+    public decimal Amount { get; set; }
+}
+
+// Reddito mensile di un membro per un dato mese (override datato con carry-forward).
+// Se per un mese non c'è un override, vale l'ultimo precedente; in mancanza, User.MonthlyIncome.
+public class MemberIncome
+{
+    public int Id { get; set; }
+    public int HouseholdId { get; set; }
+    public int UserId { get; set; }
+    public string Month { get; set; } = "";       // yyyy-MM
+    public decimal Amount { get; set; }
+}
+
 // Spese REALI memorizzate (singole + ricorrenti/programmate "pagate").
 // Le proiezioni non si salvano: le calcola il client.
 public class Expense

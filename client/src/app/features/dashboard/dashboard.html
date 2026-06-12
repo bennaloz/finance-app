@@ -15,7 +15,10 @@
 
   <div class="cards-grid">
     <div class="metric-card">
-      <div class="mc-label">Entrate</div>
+      <div class="mc-label" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Entrate</span>
+        <a (click)="toggleEditIncome()" style="font-size:11px;color:var(--color-text-secondary);text-decoration:underline;cursor:pointer">modifica</a>
+      </div>
       <div class="mc-val">{{ fmt(m.totR) }}</div>
       <div class="mc-sub">{{ m.incomeLine }}</div>
     </div>
@@ -25,6 +28,24 @@
       <div class="mc-sub">@if (m.hasProjected) { + {{ fmt(m.projectedAmount) }} previsti } @else { {{ m.confirmedCount }} voci }</div>
     </div>
   </div>
+
+  @if (editingIncome()) {
+    <div class="form-card" style="padding:.875rem 1.25rem;margin-bottom:.75rem">
+      <div style="font-size:13px;font-weight:600;margin-bottom:.5rem">Entrate di questo mese</div>
+      @for (mem of ds.monthMembers(); track mem.id) {
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.4rem">
+          <span style="font-size:13px">{{ mem.displayName }}</span>
+          <input type="text" inputmode="decimal" [value]="incomeDraft()[mem.id]"
+                 (input)="setDraft(mem.id, $any($event.target).value)" style="width:120px" />
+        </div>
+      }
+      <div style="display:flex;gap:.5rem;margin-top:.5rem">
+        <button class="btn-primary" style="margin:0" [disabled]="savingIncome()" (click)="saveIncome()">Salva</button>
+        <button class="btn-secondary" style="margin:0" (click)="editingIncome.set(false)">Annulla</button>
+      </div>
+      <div class="hint" style="margin-top:.4rem">Vale da questo mese in poi, finché non lo aggiorni.</div>
+    </div>
+  }
 
   <div class="section-title">Contribuzione del mese</div>
   <div class="form-card" style="padding:.875rem 1.25rem">

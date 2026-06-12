@@ -28,6 +28,14 @@ public record RecurringInput(string Desc, decimal Amount, string Cat, string Pay
 public record ScheduledDto(int Id, string Desc, decimal Amount, string Cat, string Payer, string Month);
 public record ScheduledInput(string Desc, decimal Amount, string Cat, string Payer, string Month);
 
+// --- Alignment (ancora di saldo del conto comune per la previsione) ---
+public record AlignmentDto(int Id, string Month, decimal Amount);
+public record AlignmentInput(string Month, decimal Amount);
+
+// --- MemberIncome (reddito di un membro per un mese, con carry-forward) ---
+public record MemberIncomeDto(int Id, int UserId, string Month, decimal Amount);
+public record MemberIncomeInput(int UserId, string Month, decimal Amount);
+
 // --- Categories ---
 public record CategoryDto(int Id, string Label, bool Common, string Icon);
 public record CategoryInput(string Label, bool Common, string? Icon);
