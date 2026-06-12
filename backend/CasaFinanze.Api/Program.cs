@@ -89,6 +89,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Endpoint di keep-warm: leggerissimo (nessun auth, nessun accesso al DB), serve solo a
+// tenere sveglio l'App Service Free, che altrimenti scarica l'app dopo ~20 min di inattività
+// e impiega ~30s a ripartire (cold start). Un pinger esterno gratuito lo chiama ogni ~5 min.
+app.MapGet("/health", () => Results.Ok("ok")).AllowAnonymous();
+
 // Serve il client Angular (build statica in wwwroot) con fallback SPA.
 app.UseDefaultFiles();
 app.UseStaticFiles();
