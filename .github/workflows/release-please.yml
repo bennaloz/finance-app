@@ -19,6 +19,10 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
+          # PAT (se presente) così le Release PR triggerano gli altri workflow
+          # (es. pr-title-lint): le PR aperte col GITHUB_TOKEN non li attivano.
+          # Fallback al GITHUB_TOKEN finché il secret non è configurato.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           target-branch: main
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
