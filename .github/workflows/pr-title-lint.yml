@@ -1,0 +1,33 @@
+name: PR title lint
+
+# Verifica che il titolo della PR sia un Conventional Commit valido.
+# È essenziale perché le PR vengono mergiate in squash e il TITOLO diventa il messaggio
+# di commit letto da release-please (vedi release-please.yml).
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  lint-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Tipi ammessi: feat/fix bumpano la versione; gli altri no.
+          types: |
+            feat
+            fix
+            chore
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            revert

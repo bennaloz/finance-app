@@ -6,4 +6,6 @@
 export const environment = {
   production: true,
   apiBaseUrl: '',
+  // Sovrascritto in CI con la versione del package.json (vedi azure-swa.yml).
+  version: '0.0.0',
 };
