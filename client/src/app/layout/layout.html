@@ -2,13 +2,13 @@
   <div class="topbar">
     <div class="month-nav">
       <button (click)="ds.changeMonth(-1)" aria-label="Mese precedente"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
-      <span>{{ monthLabel() }}</span>
+      @for (lbl of [monthLabel()]; track lbl) { <span class="month-anim">{{ lbl }}</span> }
       <button (click)="ds.changeMonth(1)" aria-label="Mese successivo"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
     </div>
     <h1>{{ title() }}</h1>
   </div>
 
-  <main class="app-content">
+  <main class="app-content" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
     <router-outlet />
   </main>
 
