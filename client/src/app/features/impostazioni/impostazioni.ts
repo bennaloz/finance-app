@@ -6,6 +6,7 @@ import { DataStore } from '../../core/data-store';
 import { fmt } from '../../util/finance-calc';
 import { MODELS } from '../../util/i18n';
 import { environment } from '../../../environments/environment';
+import { ThemeService, ThemePref } from '../../core/theme.service';
 
 @Component({
   selector: 'app-impostazioni',
@@ -15,11 +16,17 @@ import { environment } from '../../../environments/environment';
 export class Impostazioni {
   ds = inject(DataStore);
   auth = inject(AuthService);
+  theme = inject(ThemeService);
   private router = inject(Router);
   fmt = fmt;
   models = MODELS;
   modelKeys = Object.keys(MODELS);
   appVersion = environment.version;
+  themeOptions: { key: ThemePref; label: string; icon: string }[] = [
+    { key: 'system', label: 'Sistema', icon: 'ti-device-mobile' },
+    { key: 'light', label: 'Chiaro', icon: 'ti-sun' },
+    { key: 'dark', label: 'Scuro', icon: 'ti-moon' },
+  ];
 
   redditoR = signal(0);
   redditoV = signal(0);

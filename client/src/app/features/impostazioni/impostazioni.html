@@ -15,6 +15,15 @@
     </div>
   </div>
 
+  <div class="section-title" style="padding:0 .25rem">Tema</div>
+  <div class="model-tabs">
+    @for (t of themeOptions; track t.key) {
+      <button type="button" class="model-tab" [class.active]="theme.pref() === t.key" (click)="theme.set(t.key)">
+        <i class="ti {{ t.icon }}" aria-hidden="true"></i> {{ t.label }}
+      </button>
+    }
+  </div>
+
   @if (auth.user()?.joinCode) {
     <div class="section-title" style="padding:0 .25rem">Casa condivisa</div>
     <div class="form-card">
