@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { DataStore } from '../../core/data-store';
-import { catClassFor, catLabel, fmtDec, monthKey } from '../../util/finance-calc';
+import { catClassFor, catLabel, fmt, fmtDec, getProjectedExpenses, monthKey } from '../../util/finance-calc';
 import { CAT_COLORS, MONTHS } from '../../util/i18n';
 
 @Component({
@@ -14,6 +14,7 @@ export class Grafici {
   ds = inject(DataStore);
   private api = inject(ApiService);
   fmtDec = fmtDec;
+  fmt = fmt;
 
   // Totali reali degli ultimi 6 mesi (caricati dall'API, perché lo store tiene solo il mese corrente).
   private monthsTotals = signal<{ label: string; total: number }[]>([]);
@@ -61,6 +62,54 @@ export class Grafici {
     let lineY: number | null = null;
     if (totR > 0 && totR <= maxVal) lineY = this.padT + chartH * (1 - totR / maxVal);
     return { W: this.W, H: this.H, padL: this.padL, padR: this.padR, bars, lineY };
+  });
+
+  // Grafico previsionale: avanzo (entrate − uscite stimate) cumulato sui prossimi 6 mesi,
+  // a partire dalle spese inserite ad oggi (reali del mese + proiezioni ricorrenti/programmate).
+  forecast = computed(() => {
+    const s = this.ds.settings();
+    const totR = s.redditoR + s.redditoV;
+    const now = new Date();
+    const nowMk = monthKey(now.getFullYear(), now.getMonth());
+
+    const pts: { mk: string; label: string; surplus: number; cum: number }[] = [];
+    let cum = 0;
+    for (let i = 0; i < 6; i++) {
+      let y = now.getFullYear(), m = now.getMonth() + i;
+      while (m > 11) { m -= 12; y++; }
+      const mk = monthKey(y, m);
+      // Solo le spese reali del mese visualizzato sono in memoria: le filtro per mese per non contarle altrove.
+      const real = this.ds.expenses().filter(e => e.date.startsWith(mk));
+      const exps = getProjectedExpenses(mk, real, this.ds.recurrings(), this.ds.scheduleds());
+      const total = exps.reduce((a, e) => a + e.amount, 0);
+      const surplus = totR - total;
+      cum += surplus;
+      pts.push({ mk, label: MONTHS[m].slice(0, 3), surplus, cum });
+    }
+
+    const chartH = this.H - this.padT - this.padB;
+    const innerW = this.W - this.padL - this.padR;
+    const cums = pts.map(p => p.cum);
+    const minV = Math.min(0, ...cums);
+    const maxV = Math.max(0, ...cums);
+    const range = maxV - minV || 1;
+    const yFor = (v: number) => this.padT + chartH * (1 - (v - minV) / range);
+    const xFor = (i: number) => this.padL + (pts.length > 1 ? innerW * (i / (pts.length - 1)) : innerW / 2);
+
+    const nodes = pts.map((p, i) => ({
+      x: xFor(i), y: yFor(p.cum), cum: p.cum, label: p.label, isCurrent: p.mk === nowMk,
+      valLabel: (Math.round(p.cum / 100) / 10).toLocaleString('it-IT') + 'k',
+      valY: yFor(p.cum) - 6, labelY: this.H - this.padB + 14, positive: p.cum >= 0,
+    }));
+    const linePts = nodes.map(n => `${n.x},${n.y}`).join(' ');
+    const zeroY = yFor(0);
+    const areaPts = `${nodes[0].x},${zeroY} ${linePts} ${nodes[nodes.length - 1].x},${zeroY}`;
+    const finalCum = pts[pts.length - 1].cum;
+
+    return {
+      W: this.W, H: this.H, padL: this.padL, padR: this.padR,
+      nodes, linePts, areaPts, zeroY, finalCum, finalPositive: finalCum >= 0,
+    };
   });
 
   catRows = computed(() => {

@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DataStore } from '../../core/data-store';
 import { catLabel, fmtDec, monthKey } from '../../util/finance-calc';
@@ -19,6 +19,9 @@ export class Uscite {
   nowMonth = monthKey(this.now.getFullYear(), this.now.getMonth());
 
   scheduledSorted = computed(() => [...this.ds.scheduleds()].sort((a, b) => a.month.localeCompare(b.month)));
+
+  recOpen = signal(false);
+  schedOpen = signal(false);
 
   catLabel(id: string): string { return catLabel(id, this.ds.categories()); }
   freqLabel(f: string): string { return FREQS[f] ?? f; }

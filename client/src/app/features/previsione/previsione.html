@@ -2,6 +2,12 @@
   <div class="section-title" style="padding:0 .25rem">Prossimi 6 mesi</div>
   <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.75rem">Proiezione basata su ricorrenti + programmate</div>
 
+  @let tot = totalSurplus();
+  <div class="previsione-card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+    <span style="font-size:13px;color:var(--color-text-secondary)">Avanzo totale a 6 mesi</span>
+    <strong class="prev-surplus" style="margin:0" [style.color]="tot >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ tot >= 0 ? '+ ' : '– ' }}{{ fmt(abs(tot)) }}</strong>
+  </div>
+
   @for (c of cards(); track c.label) {
     <div class="previsione-card" [style.border-color]="c.isCurrent ? 'var(--c-teal)' : null" [style.border-width]="c.isCurrent ? '1px' : null">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">

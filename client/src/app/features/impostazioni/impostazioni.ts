@@ -5,6 +5,7 @@ import { AuthService } from '../../core/auth.service';
 import { DataStore } from '../../core/data-store';
 import { fmt } from '../../util/finance-calc';
 import { MODELS } from '../../util/i18n';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-impostazioni',
@@ -18,6 +19,7 @@ export class Impostazioni {
   fmt = fmt;
   models = MODELS;
   modelKeys = Object.keys(MODELS);
+  appVersion = environment.version;
 
   redditoR = signal(0);
   redditoV = signal(0);

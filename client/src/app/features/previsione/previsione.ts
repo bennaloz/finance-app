@@ -37,4 +37,7 @@ export class Previsione {
     }
     return out;
   });
+
+  // Totale dell'avanzo (entrate − uscite stimate) cumulato sui 6 mesi mostrati.
+  totalSurplus = computed(() => this.cards().reduce((a, c) => a + c.surplus, 0));
 }
