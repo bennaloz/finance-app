@@ -35,7 +35,7 @@
       @for (mem of ds.monthMembers(); track mem.id) {
         <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.4rem">
           <span style="font-size:13px">{{ mem.displayName }}</span>
-          <input type="text" inputmode="decimal" [value]="incomeDraft()[mem.id]"
+          <input type="text" inputmode="decimal" class="field-input" [value]="incomeDraft()[mem.id]"
                  (input)="setDraft(mem.id, $any($event.target).value)" style="width:120px" />
         </div>
       }
