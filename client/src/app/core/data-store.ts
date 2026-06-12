@@ -19,6 +19,11 @@ export class DataStore {
   settings = signal<Settings>({ risparmio: 0, model: '5050', modelLog: [] });
   loaded = signal(false);
 
+  // Stato di apertura degli accordion nella schermata Uscite: vive nello store così
+  // resta aperto quando si va a modificare una voce e si torna indietro.
+  usciteRecOpen = signal(false);
+  usciteSchedOpen = signal(false);
+
   // Reddito totale del nucleo = somma dei redditi dei membri (sostituisce redditoR+redditoV).
   totalIncome = computed(() => this.members().reduce((a, m) => a + m.monthlyIncome, 0));
 
