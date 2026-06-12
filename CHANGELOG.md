@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/bennaloz/finance-app/compare/v1.0.0...v1.1.0) (2026-06-12)
+
+
+### Features
+
+* dark mode con toggle Sistema/Chiaro/Scuro ([a3a79cc](https://github.com/bennaloz/finance-app/commit/a3a79cc314ee424cfae01a1806f903ff9527a8c0))
+* dark mode con toggle Sistema/Chiaro/Scuro in Impostazioni ([#11](https://github.com/bennaloz/finance-app/issues/11)) ([a4362bb](https://github.com/bennaloz/finance-app/commit/a4362bb86ed679e62f4b5afc99778f9a7f254b54))
+
 ## [1.0.0](https://github.com/bennaloz/finance-app/compare/v1.0.0...v1.0.0) (2026-06-12)
 
 
