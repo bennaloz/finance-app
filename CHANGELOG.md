@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/bennaloz/finance-app/compare/v1.1.0...v1.2.0) (2026-06-12)
+
+
+### Features
+
+* nucleo a N membri al posto del cablaggio Riccardo/Valentina ([ab4fd3a](https://github.com/bennaloz/finance-app/commit/ab4fd3af5fc8d33fd5120365b83413d38e30cdb2))
+* nucleo a N membri al posto del cablaggio Riccardo/Valentina ([#14](https://github.com/bennaloz/finance-app/issues/14)) ([34d4a92](https://github.com/bennaloz/finance-app/commit/34d4a92054989930597214d0d45d4d6cabae59e7))
+
 ## [1.1.0](https://github.com/bennaloz/finance-app/compare/v1.0.0...v1.1.0) (2026-06-12)
 
 
