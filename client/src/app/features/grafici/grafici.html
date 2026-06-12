@@ -1,4 +1,24 @@
 <div class="screen">
+  <div class="section-title" style="padding:0 .25rem">Avanzo previsto · prossimi 6 mesi</div>
+  <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.5rem">Soldi avanzati cumulati (entrate − uscite stimate) in base alle spese inserite ad oggi</div>
+
+  <div class="previsione-card">
+    @let fc = forecast();
+    <svg [attr.viewBox]="'0 0 ' + fc.W + ' ' + fc.H" width="100%" role="img" aria-label="Avanzo cumulato previsto prossimi 6 mesi">
+      <polygon [attr.points]="fc.areaPts" [attr.fill]="fc.finalPositive ? '#2D7D6F' : '#E24B4A'" fill-opacity="0.12"></polygon>
+      <line [attr.x1]="fc.padL" [attr.y1]="fc.zeroY" [attr.x2]="fc.W - fc.padR" [attr.y2]="fc.zeroY" stroke="var(--color-text-secondary)" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"></line>
+      <polyline [attr.points]="fc.linePts" fill="none" [attr.stroke]="fc.finalPositive ? '#2D7D6F' : '#E24B4A'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>
+      @for (n of fc.nodes; track $index) {
+        <circle [attr.cx]="n.x" [attr.cy]="n.y" [attr.r]="n.isCurrent ? 3.5 : 2.5" [attr.fill]="n.positive ? '#2D7D6F' : '#E24B4A'"></circle>
+        <text [attr.x]="n.x" [attr.y]="n.valY" text-anchor="middle" font-size="9" style="fill:var(--color-text-secondary)">{{ n.valLabel }}</text>
+        <text [attr.x]="n.x" [attr.y]="n.labelY" text-anchor="middle" font-size="9" style="fill:var(--color-text-secondary)">{{ n.label }}</text>
+      }
+    </svg>
+    <div class="prev-surplus" style="text-align:center;margin-top:.25rem" [style.color]="fc.finalPositive ? 'var(--c-teal)' : '#E24B4A'">
+      Avanzo a 6 mesi: {{ fc.finalPositive ? '+ ' : '– ' }}{{ fmt(fc.finalCum < 0 ? -fc.finalCum : fc.finalCum) }}
+    </div>
+  </div>
+
   <div class="section-title" style="padding:0 .25rem">Andamento ultimi 6 mesi</div>
   <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.5rem">Uscite registrate per mese · linea = entrate</div>
 
