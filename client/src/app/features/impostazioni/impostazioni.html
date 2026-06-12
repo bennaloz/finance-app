@@ -94,4 +94,6 @@
 
   <button class="btn-primary" (click)="save()">Salva impostazioni</button>
   <button class="btn-secondary" style="margin-top:.75rem" (click)="logout()"><i class="ti ti-logout" aria-hidden="true"></i> Esci@if (auth.user()) { ({{ auth.user()?.displayName }})}</button>
+
+  <p style="text-align:center;margin-top:1.25rem;font-size:11px;color:var(--color-text-secondary)">CasaFinanze v{{ appVersion }}</p>
 </div>

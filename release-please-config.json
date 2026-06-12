@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "casafinanze",
+      "include-component-in-tag": false,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "client/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "xml",
+          "path": "backend/CasaFinanze.Api/CasaFinanze.Api.csproj",
+          "xpath": "//Version"
+        }
+      ]
+    }
+  }
+}

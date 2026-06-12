@@ -30,18 +30,24 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
 
-      - name: Inietta apiBaseUrl (backend dell'ambiente)
+      - name: Inietta apiBaseUrl e versione (per ambiente)
         working-directory: client
         run: |
+          # Versione condivisa dal package.json (gestito da release-please).
+          # Su PROD mostra la versione pulita; su TEST aggiunge suffisso -test+<shortsha>.
+          BASE_VERSION="$(node -p "require('./package.json').version")"
           if [ "$IS_PROD" = "true" ]; then
             API_URL='${{ vars.API_BASE_URL || 'https://bennaloz-home-finances.azurewebsites.net' }}'
+            APP_VERSION="$BASE_VERSION"
           else
             API_URL='${{ vars.API_BASE_URL_TEST || 'https://bennaloz-home-finances-test.azurewebsites.net' }}'
+            APP_VERSION="${BASE_VERSION}-test+${GITHUB_SHA::7}"
           fi
           cat > src/environments/environment.ts <<EOF
           export const environment = {
             production: true,
             apiBaseUrl: '$API_URL',
+            version: '$APP_VERSION',
           };
           EOF
 
