@@ -1,13 +1,14 @@
 <div class="screen">
   <div class="form-card">
-    <div class="form-row">
-      <label>Reddito netto Riccardo (€/mese)</label>
-      <input type="number" [(ngModel)]="redditoR" (input)="markTouched()" placeholder="2250" step="1">
-    </div>
-    <div class="form-row">
-      <label>Reddito netto Valentina (€/mese)</label>
-      <input type="number" [(ngModel)]="redditoV" (input)="markTouched()" placeholder="1700" step="1">
-    </div>
+    @for (em of editMembers(); track em.id) {
+      <div class="form-row">
+        <label>Reddito netto {{ em.displayName }} (€/mese)</label>
+        <input type="number" [ngModel]="em.income" (ngModelChange)="setIncome(em.id, $event)" placeholder="0" step="1">
+      </div>
+    }
+    @if (editMembers().length === 0) {
+      <div class="hint" style="margin-bottom:.875rem">Nessun membro nel nucleo. Per aggiungerne, fai registrare un altro account con il codice casa qui sotto.</div>
+    }
     <div class="form-row">
       <label>Risparmio programmato mensile (€)</label>
       <input type="number" [(ngModel)]="risparmio" (input)="markTouched()" placeholder="0" step="1">
@@ -82,8 +83,9 @@
   @let pv = preview();
   <div class="form-card" style="padding:.875rem 1.25rem">
     <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.03em">Esempio su €{{ pv.ex.toLocaleString('it-IT') }} di spese comuni</div>
-    <div class="split-row"><span>Quota Riccardo</span><strong>{{ fmt(pv.dR) }} ({{ pv.pctR }}%)</strong></div>
-    <div class="split-row" style="border:none"><span>Quota Valentina</span><strong>{{ fmt(pv.dV) }} ({{ pv.pctV }}%)</strong></div>
+    @for (row of pv.rows; track row.name; let last = $last) {
+      <div class="split-row" [style.border]="last ? 'none' : null"><span>Quota {{ row.name }}</span><strong>{{ fmt(row.due) }} ({{ row.pct }}%)</strong></div>
+    }
   </div>
 
   <div class="section-title" style="padding:0 .25rem">Storico modelli</div>
@@ -94,7 +96,7 @@
       <div class="log-item">
         <div>
           <div style="font-size:13px;font-weight:500">{{ l.modelLabel }}</div>
-          <div style="font-size:11px;color:var(--color-text-secondary)">R: {{ fmt(l.redditoR) }} · V: {{ fmt(l.redditoV) }}</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">{{ incomesSummary(l.incomesJson) }}</div>
         </div>
         <div style="font-size:11px;color:var(--color-text-secondary)">{{ l.date }}</div>
       </div>

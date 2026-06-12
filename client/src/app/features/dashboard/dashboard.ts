@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { DataStore } from '../../core/data-store';
 import { DisplayExpense } from '../../models/models';
 import { computeContrib, fmt } from '../../util/finance-calc';
-import { MODELS } from '../../util/i18n';
+import { MODELS, memberColor } from '../../util/i18n';
 import { ExpenseRow } from '../shared/expense-row';
 
 @Component({
@@ -23,14 +23,21 @@ export class Dashboard {
   vm = computed(() => {
     const exps = this.exps();
     const s = this.ds.settings();
-    const totR = s.redditoR + s.redditoV;
+    const members = this.ds.members();
+    const totR = this.ds.totalIncome();
     const confirmed = exps.filter(e => !e.projected);
     const projected = exps.filter(e => e.projected);
     const totalConfirmed = confirmed.reduce((a, e) => a + e.amount, 0);
     const totalAll = exps.reduce((a, e) => a + e.amount, 0);
     const surplus = totR - totalAll;
     const pct = totR > 0 ? Math.min((totalAll / totR) * 100, 100) : 0;
-    const c = computeContrib(exps, s, this.ds.categories());
+    const c = computeContrib(exps, s, this.ds.categories(), members);
+    // Una riga di contribuzione per membro, con colore e % pagato/dovuto.
+    const contribRows = c.members.map((mc, i) => ({
+      ...mc, color: memberColor(i),
+      pct: Math.min(mc.due > 0 ? (mc.paid / mc.due) * 100 : 0, 100),
+    }));
+    const incomeLine = members.map(m => `${m.displayName}: ${fmt(m.monthlyIncome)}`).join(' · ');
     const recent = [...exps].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
     return {
       totR, totalConfirmed, totalAll, surplus, pct,
@@ -39,10 +46,7 @@ export class Dashboard {
       hasProjected: projected.length > 0,
       confirmedCount: confirmed.length,
       modelLabel: MODELS[s.model]?.label ?? s.model,
-      redditoR: s.redditoR, redditoV: s.redditoV,
-      c,
-      pctR: Math.min(c.dR > 0 ? (c.paidR / c.dR) * 100 : 0, 100),
-      pctV: Math.min(c.dV > 0 ? (c.paidV / c.dV) * 100 : 0, 100),
+      incomeLine, contribRows,
       recent,
     };
   });

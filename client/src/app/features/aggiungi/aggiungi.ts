@@ -2,7 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataStore } from '../../core/data-store';
-import { allCatIds, catFormLabel, monthKey } from '../../util/finance-calc';
+import { allCatIds, catFormLabel, memberPayerRef, monthKey } from '../../util/finance-calc';
 import { FREQS } from '../../util/i18n';
 
 type Tipo = 'singola' | 'ricorrente' | 'programmata';
@@ -36,7 +36,13 @@ export class Aggiungi implements OnInit {
   error = signal('');
 
   catOptions = computed(() =>
-    allCatIds(this.ds.categories()).map(id => ({ id, label: catFormLabel(id, this.ds.categories()) })));
+    allCatIds(this.ds.categories(), this.ds.members())
+      .map(id => ({ id, label: catFormLabel(id, this.ds.categories(), this.ds.members()) })));
+
+  // Opzioni "Chi paga": conto comune + un membro per ciascun utente del nucleo.
+  payerOptions = computed(() =>
+    [{ id: 'comune', label: 'Conto comune' },
+     ...this.ds.members().map(m => ({ id: memberPayerRef(m.id), label: m.displayName }))]);
 
   saveLabel = computed(() => this.editingId() ? 'Aggiorna' : 'Salva');
 

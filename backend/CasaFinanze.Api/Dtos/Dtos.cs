@@ -7,9 +7,14 @@ public record AddUserRequest(string Email, string Password, string? DisplayName)
 public record AuthResponse(string Token, string Email, string DisplayName, int HouseholdId, string HouseholdName, string JoinCode);
 
 // --- Settings ---
-public record ModelLogDto(string Date, string Model, string ModelLabel, decimal RedditoR, decimal RedditoV);
-public record SettingsDto(decimal RedditoR, decimal RedditoV, decimal Risparmio, string Model, List<ModelLogDto> ModelLog);
-public record SettingsInput(decimal RedditoR, decimal RedditoV, decimal Risparmio, string Model, string? ModelLabel);
+// IncomesJson: snapshot {nome: reddito} dei membri al momento del cambio (storico).
+public record ModelLogDto(string Date, string Model, string ModelLabel, string IncomesJson);
+public record SettingsDto(decimal Risparmio, string Model, List<ModelLogDto> ModelLog);
+public record SettingsInput(decimal Risparmio, string Model, string? ModelLabel);
+
+// --- Members (= utenti del nucleo, con reddito) ---
+public record MemberDto(int Id, string DisplayName, decimal MonthlyIncome);
+public record MemberInput(decimal MonthlyIncome, string? DisplayName);
 
 // --- Expenses ---
 public record ExpenseDto(int Id, string Desc, decimal Amount, string Cat, string Payer, string Date, string Tipo, int? RecurringId, int? ScheduledId);

@@ -1,8 +1,12 @@
 import { computeContrib, getProjectedExpenses, recurringInMonth, catIsCommon } from './finance-calc';
-import { Expense, Recurring, Scheduled, Settings } from '../models/models';
+import { Expense, Member, Recurring, Scheduled, Settings } from '../models/models';
 
 describe('finance-calc', () => {
-  const settings: Settings = { redditoR: 2000, redditoV: 1000, risparmio: 0, model: '5050', modelLog: [] };
+  const settings: Settings = { risparmio: 0, model: '5050', modelLog: [] };
+  const members: Member[] = [
+    { id: 1, displayName: 'Riccardo', monthlyIncome: 2000 },
+    { id: 2, displayName: 'Valentina', monthlyIncome: 1000 },
+  ];
 
   it('recurringInMonth: mensile sempre dal mese di partenza', () => {
     const r = { freq: 'mensile', fromMonth: '2026-01', toMonth: null } as Recurring;
@@ -38,32 +42,34 @@ describe('finance-calc', () => {
     expect(getProjectedExpenses('2026-04', [], [], sched).length).toBe(1);
   });
 
-  it('catIsCommon: builtin comuni e custom in base al flag', () => {
+  it('catIsCommon: builtin comuni e custom in base al flag; personali escluse', () => {
     const cats = [{ id: 5, label: 'Vacanze', common: true, icon: 'ti-tag' }, { id: 6, label: 'Hobby', common: false, icon: 'ti-tag' }];
     expect(catIsCommon('variabile', cats)).toBe(true);
-    expect(catIsCommon('riccardo', cats)).toBe(false);
+    expect(catIsCommon('p1', cats)).toBe(false); // personale di un membro
     expect(catIsCommon('c5', cats)).toBe(true);
     expect(catIsCommon('c6', cats)).toBe(false);
   });
 
-  it('computeContrib: 50/50 divide a metà le sole comuni', () => {
+  it('computeContrib: parti uguali divide a metà le sole comuni', () => {
     const exps = [
-      { id: 1, desc: 'a', amount: 100, cat: 'variabile', payer: 'riccardo', date: '2026-03-01', tipo: 'singola' },
-      { id: 2, desc: 'b', amount: 40, cat: 'riccardo', payer: 'riccardo', date: '2026-03-02', tipo: 'singola' }, // personale → esclusa
+      { id: 1, desc: 'a', amount: 100, cat: 'variabile', payer: 'u1', date: '2026-03-01', tipo: 'singola' },
+      { id: 2, desc: 'b', amount: 40, cat: 'p1', payer: 'u1', date: '2026-03-02', tipo: 'singola' }, // personale → esclusa
     ];
-    const c = computeContrib(exps, settings, []);
+    const c = computeContrib(exps, settings, [], members);
     expect(c.totalCommon).toBe(100);
-    expect(c.dR).toBe(50);
-    expect(c.dV).toBe(50);
-    expect(c.paidR).toBe(100);
-    expect(c.saldoR).toBe(50);  // ha pagato 100, doveva 50
-    expect(c.saldoV).toBe(-50);
+    const r = c.members.find(m => m.id === 1)!;
+    const v = c.members.find(m => m.id === 2)!;
+    expect(r.due).toBe(50);
+    expect(v.due).toBe(50);
+    expect(r.paid).toBe(100);
+    expect(r.saldo).toBe(50);  // ha pagato 100, doveva 50
+    expect(v.saldo).toBe(-50);
   });
 
   it('computeContrib: proporzionale al reddito', () => {
     const exps = [{ id: 1, desc: 'a', amount: 300, cat: 'common', payer: 'comune', date: '2026-03-01', tipo: 'singola' }];
-    const c = computeContrib(exps, { ...settings, model: 'prop' }, []);
-    expect(c.dR).toBeCloseTo(200); // 2000/3000 * 300
-    expect(c.dV).toBeCloseTo(100);
+    const c = computeContrib(exps, { ...settings, model: 'prop' }, [], members);
+    expect(c.members.find(m => m.id === 1)!.due).toBeCloseTo(200); // 2000/3000 * 300
+    expect(c.members.find(m => m.id === 2)!.due).toBeCloseTo(100);
   });
 });

@@ -2,8 +2,8 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { DataStore } from '../../core/data-store';
-import { catClassFor, catLabel, fmt, fmtDec, getProjectedExpenses, monthKey } from '../../util/finance-calc';
-import { CAT_COLORS, MONTHS } from '../../util/i18n';
+import { catColor, catLabel, fmt, fmtDec, getProjectedExpenses, monthKey } from '../../util/finance-calc';
+import { MONTHS } from '../../util/i18n';
 
 @Component({
   selector: 'app-grafici',
@@ -43,8 +43,7 @@ export class Grafici {
   }
 
   chart = computed(() => {
-    const s = this.ds.settings();
-    const totR = s.redditoR + s.redditoV;
+    const totR = this.ds.totalIncome();
     const months = this.monthsTotals();
     const maxVal = Math.max(totR, ...months.map(x => x.total), 1);
     const chartH = this.H - this.padT - this.padB;
@@ -67,8 +66,7 @@ export class Grafici {
   // Grafico previsionale: avanzo (entrate − uscite stimate) cumulato sui prossimi 6 mesi,
   // a partire dalle spese inserite ad oggi (reali del mese + proiezioni ricorrenti/programmate).
   forecast = computed(() => {
-    const s = this.ds.settings();
-    const totR = s.redditoR + s.redditoV;
+    const totR = this.ds.totalIncome();
     const now = new Date();
     const nowMk = monthKey(now.getFullYear(), now.getMonth());
 
@@ -119,10 +117,10 @@ export class Grafici {
     const rows = Object.keys(byCat).map(c => ({ cat: c, total: byCat[c] })).sort((a, b) => b.total - a.total);
     const maxCat = Math.max(...rows.map(r => r.total), 1);
     return rows.map(r => ({
-      label: catLabel(r.cat, this.ds.categories()),
+      label: catLabel(r.cat, this.ds.categories(), this.ds.members()),
       total: r.total,
       pct: (r.total / maxCat) * 100,
-      color: CAT_COLORS[catClassFor(r.cat)] || CAT_COLORS['custom'],
+      color: catColor(r.cat, this.ds.categories(), this.ds.members()),
     }));
   });
 }
