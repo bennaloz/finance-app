@@ -40,9 +40,10 @@
         </div>
       }
       <div style="display:flex;gap:.5rem;margin-top:.5rem">
-        <button class="btn-primary" style="margin:0" [disabled]="savingIncome()" (click)="saveIncome()">Salva</button>
+        <button class="btn-primary" style="margin:0" [disabled]="savingIncome()" (click)="saveIncome()">{{ savingIncome() ? 'Salvataggio…' : 'Salva' }}</button>
         <button class="btn-secondary" style="margin:0" (click)="editingIncome.set(false)">Annulla</button>
       </div>
+      @if (incomeError()) { <div style="font-size:12px;color:#E24B4A;margin-top:.4rem">{{ incomeError() }}</div> }
       <div class="hint" style="margin-top:.4rem">Vale da questo mese in poi, finché non lo aggiorni.</div>
     </div>
   }

@@ -27,6 +27,7 @@ export class Previsione {
   saldoInput = signal('');
   saving = signal(false);
   savedMsg = signal(false);
+  errorMsg = signal('');
 
   cards = computed(() => {
     // Reddito per-mese: somma dei redditi effettivi dei membri in quel mese (carry-forward).
@@ -55,7 +56,8 @@ export class Previsione {
 
   setAnchor(): void {
     const amount = parseFloat(this.saldoInput().replace(',', '.'));
-    if (isNaN(amount)) return;
+    if (isNaN(amount)) { this.errorMsg.set('Inserisci un importo valido.'); return; }
+    this.errorMsg.set('');
     this.saving.set(true);
     this.ds.setAlignment(this.nowMk, amount).subscribe({
       next: () => {
@@ -64,7 +66,10 @@ export class Previsione {
         this.saldoInput.set('');
         setTimeout(() => this.savedMsg.set(false), 2000);
       },
-      error: () => this.saving.set(false),
+      error: () => {
+        this.saving.set(false);
+        this.errorMsg.set('Salvataggio non riuscito. Riprova.');
+      },
     });
   }
 }

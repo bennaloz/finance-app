@@ -24,6 +24,7 @@ export class Dashboard {
   // Editor inline delle entrate del mese (reddito per-membro, datato con carry-forward).
   editingIncome = signal(false);
   savingIncome = signal(false);
+  incomeError = signal('');
   incomeDraft = signal<Record<number, string>>({});
 
   toggleEditIncome(): void {
@@ -44,10 +45,11 @@ export class Dashboard {
     const month = this.ds.monthKey();
     const calls = this.ds.members().map(m => this.ds.setMemberIncome(m.id, month, Number((draft[m.id] ?? '').replace(',', '.')) || 0));
     if (!calls.length) { this.editingIncome.set(false); return; }
+    this.incomeError.set('');
     this.savingIncome.set(true);
     forkJoin(calls).subscribe({
       next: () => { this.savingIncome.set(false); this.editingIncome.set(false); },
-      error: () => this.savingIncome.set(false),
+      error: () => { this.savingIncome.set(false); this.incomeError.set('Salvataggio non riuscito. Riprova.'); },
     });
   }
 
