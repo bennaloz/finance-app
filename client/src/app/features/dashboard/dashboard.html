@@ -17,7 +17,7 @@
     <div class="metric-card">
       <div class="mc-label">Entrate</div>
       <div class="mc-val">{{ fmt(m.totR) }}</div>
-      <div class="mc-sub">R: {{ fmt(m.redditoR) }} · V: {{ fmt(m.redditoV) }}</div>
+      <div class="mc-sub">{{ m.incomeLine }}</div>
     </div>
     <div class="metric-card">
       <div class="mc-label">Uscite</div>
@@ -32,24 +32,27 @@
       <span class="badge badge-model">{{ m.modelLabel }}</span>
       <a routerLink="/impostazioni" style="font-size:11px;color:var(--color-text-secondary);text-decoration:underline">modifica</a>
     </div>
-    <div class="contrib-bar">
-      <div class="contrib-row">
-        <span class="contrib-name">Riccardo</span>
-        <div class="contrib-track"><div class="contrib-fill-r" [style.width.%]="m.pctR"></div></div>
-        <span class="contrib-amt" style="color:#378ADD">{{ fmt(m.c.paidR) }}</span>
+    @if (m.contribRows.length === 0) {
+      <div class="hint" style="padding:.25rem">Aggiungi membri al nucleo in Impostazioni.</div>
+    } @else {
+      <div class="contrib-bar">
+        @for (r of m.contribRows; track r.id) {
+          <div class="contrib-row">
+            <span class="contrib-name">{{ r.name }}</span>
+            <div class="contrib-track"><div class="contrib-fill" [style.width.%]="r.pct" [style.background]="r.color"></div></div>
+            <span class="contrib-amt" [style.color]="r.color">{{ fmt(r.paid) }}</span>
+          </div>
+        }
       </div>
-      <div class="contrib-row">
-        <span class="contrib-name">Valentina</span>
-        <div class="contrib-track"><div class="contrib-fill-v" [style.width.%]="m.pctV"></div></div>
-        <span class="contrib-amt" style="color:#D4537E">{{ fmt(m.c.paidV) }}</span>
+      <div class="split-detail">
+        @for (r of m.contribRows; track r.id; let last = $last) {
+          <div class="split-row" [style.border]="last ? 'none' : null">
+            <span>{{ r.name }} — dovuto {{ fmt(r.due) }}</span>
+            <strong [style.color]="r.saldo >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ r.saldo >= 0 ? '+' : '' }}{{ fmt(r.saldo) }}</strong>
+          </div>
+        }
       </div>
-    </div>
-    <div class="split-detail">
-      <div class="split-row"><span>Dovuto da Riccardo</span><strong>{{ fmt(m.c.dR) }}</strong></div>
-      <div class="split-row"><span>Dovuto da Valentina</span><strong>{{ fmt(m.c.dV) }}</strong></div>
-      <div class="split-row"><span>Saldo Riccardo</span><strong [style.color]="m.c.saldoR >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ m.c.saldoR >= 0 ? '+' : '' }}{{ fmt(m.c.saldoR) }}</strong></div>
-      <div class="split-row" style="border:none"><span>Saldo Valentina</span><strong [style.color]="m.c.saldoV >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ m.c.saldoV >= 0 ? '+' : '' }}{{ fmt(m.c.saldoV) }}</strong></div>
-    </div>
+    }
   </div>
 
   <div class="section-title">Uscite recenti</div>

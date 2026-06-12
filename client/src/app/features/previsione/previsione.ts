@@ -14,8 +14,7 @@ export class Previsione {
   abs = Math.abs;
 
   cards = computed(() => {
-    const s = this.ds.settings();
-    const totR = s.redditoR + s.redditoV;
+    const totR = this.ds.totalIncome();
     const now = new Date();
     const nowMk = monthKey(now.getFullYear(), now.getMonth());
     const out = [];

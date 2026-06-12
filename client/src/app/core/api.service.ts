@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { CustomCategory, Expense, Recurring, Scheduled, Settings } from '../models/models';
+import { CustomCategory, Expense, Member, Recurring, Scheduled, Settings } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -24,8 +24,13 @@ export class ApiService {
   deleteScheduled(id: number) { return this.http.delete(`${this.base}/api/scheduled/${id}`); }
 
   getSettings() { return this.http.get<Settings>(`${this.base}/api/settings`); }
-  updateSettings(s: { redditoR: number; redditoV: number; risparmio: number; model: string; modelLabel?: string }) {
+  updateSettings(s: { risparmio: number; model: string; modelLabel?: string }) {
     return this.http.put<Settings>(`${this.base}/api/settings`, s);
+  }
+
+  getMembers() { return this.http.get<Member[]>(`${this.base}/api/members`); }
+  updateMember(id: number, input: { monthlyIncome: number; displayName?: string }) {
+    return this.http.put<Member>(`${this.base}/api/members/${id}`, input);
   }
 
   getCategories() { return this.http.get<CustomCategory[]>(`${this.base}/api/categories`); }

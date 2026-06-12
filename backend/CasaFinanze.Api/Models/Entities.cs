@@ -1,6 +1,6 @@
 namespace CasaFinanze.Api.Models;
 
-// Un "household" è il nucleo che condivide i dati (oggi: una coppia).
+// Un "household" è il nucleo che condivide i dati. Ha N membri (= utenti).
 // Tutte le altre entità sono isolate per HouseholdId → schema già multi-tenant.
 public class Household
 {
@@ -9,12 +9,12 @@ public class Household
     // Codice condiviso che un secondo utente inserisce in fase di registrazione per
     // unirsi a questa casa invece di crearne una nuova. Univoco.
     public string JoinCode { get; set; } = "";
-    public string MemberAName { get; set; } = "Riccardo";
-    public string MemberBName { get; set; } = "Valentina";
     public DateTime CreatedUtc { get; set; }
     public List<User> Users { get; set; } = new();
 }
 
+// Un utente è anche un "membro" del nucleo: ha un proprio reddito mensile usato per
+// la divisione delle spese comuni.
 public class User
 {
     public int Id { get; set; }
@@ -23,21 +23,22 @@ public class User
     public string Email { get; set; } = "";
     public string PasswordHash { get; set; } = "";
     public string DisplayName { get; set; } = "";
+    public decimal MonthlyIncome { get; set; }
     public DateTime CreatedUtc { get; set; }
 }
 
-// Una riga per household: redditi, risparmio programmato, modello di divisione.
+// Una riga per household: risparmio programmato e modello di divisione.
+// I redditi NON stanno più qui: sono per-membro su User.MonthlyIncome.
 public class HouseholdSettings
 {
     public int Id { get; set; }
     public int HouseholdId { get; set; }
-    public decimal RedditoR { get; set; }
-    public decimal RedditoV { get; set; }
     public decimal Risparmio { get; set; }
     public string Model { get; set; } = "5050";
 }
 
-// Storico dei cambi di modello/redditi (come il modelLog dell'app attuale).
+// Storico dei cambi di modello/redditi. IncomesJson è uno snapshot {nome: reddito}
+// dei membri al momento del cambio, per N membri (generalizza i vecchi RedditoR/V).
 public class ModelLogEntry
 {
     public int Id { get; set; }
@@ -45,8 +46,7 @@ public class ModelLogEntry
     public string Date { get; set; } = "";   // yyyy-MM-dd
     public string Model { get; set; } = "";
     public string ModelLabel { get; set; } = "";
-    public decimal RedditoR { get; set; }
-    public decimal RedditoV { get; set; }
+    public string IncomesJson { get; set; } = "{}";
 }
 
 public class CustomCategory

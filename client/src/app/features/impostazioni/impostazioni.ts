@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
 import { DataStore } from '../../core/data-store';
 import { fmt } from '../../util/finance-calc';
@@ -28,8 +29,8 @@ export class Impostazioni {
     { key: 'dark', label: 'Scuro', icon: 'ti-moon' },
   ];
 
-  redditoR = signal(0);
-  redditoV = signal(0);
+  // Redditi editabili per membro (popolati dai membri del nucleo).
+  editMembers = signal<{ id: number; displayName: string; income: number }[]>([]);
   risparmio = signal(0);
   pendingModel = signal('5050');
   newCatLabel = signal('');
@@ -46,31 +47,52 @@ export class Impostazioni {
   }
 
   constructor() {
-    // Popola i campi dai settings finché l'utente non inizia a modificarli (come renderImpostazioni).
+    // Aggiorna i membri all'apertura: un nuovo membro può essersi unito col codice
+    // dopo il login (quando la lista era stata caricata).
+    this.ds.reloadMembers();
+    // Popola i campi dai settings/membri finché l'utente non inizia a modificarli.
     effect(() => {
       const s = this.ds.settings();
+      const members = this.ds.members();
       if (this.touched()) return;
-      this.redditoR.set(s.redditoR);
-      this.redditoV.set(s.redditoV);
       this.risparmio.set(s.risparmio || 0);
       this.pendingModel.set(s.model);
+      this.editMembers.set(members.map(m => ({ id: m.id, displayName: m.displayName, income: m.monthlyIncome })));
     });
   }
 
   modelDesc = computed(() => MODELS[this.pendingModel()]?.desc ?? '');
 
+  // Esempio di divisione di una spesa comune, per ciascun membro col modello scelto.
   preview = computed(() => {
-    const rR = Number(this.redditoR()) || this.ds.settings().redditoR;
-    const rV = Number(this.redditoV()) || this.ds.settings().redditoV;
+    const members = this.editMembers();
     const ex = 2800;
-    const p = rR / (rR + rV || 1);
-    const m = this.pendingModel();
-    const dR = m === 'prop' ? ex * p : ex / 2;
-    const dV = m === 'prop' ? ex * (1 - p) : ex / 2;
-    return { ex, dR, dV, pctR: Math.round(dR / ex * 100), pctV: Math.round(dV / ex * 100) };
+    const totalIncome = members.reduce((a, m) => a + (Number(m.income) || 0), 0);
+    const n = members.length;
+    const rows = members.map(m => {
+      const due = this.pendingModel() === 'prop' && totalIncome > 0
+        ? ex * ((Number(m.income) || 0) / totalIncome)
+        : (n > 0 ? ex / n : 0);
+      return { name: m.displayName, due, pct: Math.round(due / ex * 100) };
+    });
+    return { ex, rows };
   });
 
+  // Parsifica lo snapshot redditi dello storico in un testo "Nome: €x · ...".
+  incomesSummary(json: string): string {
+    try {
+      const obj = JSON.parse(json || '{}') as Record<string, number>;
+      return Object.entries(obj).map(([k, v]) => `${k}: ${fmt(v)}`).join(' · ');
+    } catch {
+      return '';
+    }
+  }
+
   markTouched(): void { this.touched.set(true); }
+  setIncome(id: number, value: number): void {
+    this.touched.set(true);
+    this.editMembers.update(list => list.map(m => m.id === id ? { ...m, income: value } : m));
+  }
   selectModel(m: string): void { this.touched.set(true); this.pendingModel.set(m); }
 
   addCat(): void {
@@ -87,13 +109,11 @@ export class Impostazioni {
 
   save(): void {
     const m = this.pendingModel();
-    this.ds.saveSettings({
-      redditoR: Number(this.redditoR()) || 0,
-      redditoV: Number(this.redditoV()) || 0,
-      risparmio: Number(this.risparmio()) || 0,
-      model: m,
-      modelLabel: MODELS[m]?.label ?? m,
-    }).subscribe(() => { this.touched.set(false); this.router.navigateByUrl('/'); });
+    // Salva in parallelo le impostazioni e il reddito di ogni membro.
+    forkJoin([
+      this.ds.saveSettings({ risparmio: Number(this.risparmio()) || 0, model: m, modelLabel: MODELS[m]?.label ?? m }),
+      ...this.editMembers().map(em => this.ds.updateMemberIncome(em.id, Number(em.income) || 0)),
+    ]).subscribe(() => { this.touched.set(false); this.router.navigateByUrl('/'); });
   }
 
   logout(): void {

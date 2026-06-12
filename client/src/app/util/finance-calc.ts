@@ -1,12 +1,16 @@
 // Logica di calcolo PORTATA dall'app vanilla (index.html). Funzioni pure,
 // così sono testabili e identiche al comportamento originale.
 
-import { CustomCategory, DisplayExpense, Expense, Recurring, Scheduled, Settings } from '../models/models';
-import { CAT_ICONS, CAT_LABELS, CAT_FORM_LABELS } from './i18n';
+import { CustomCategory, DisplayExpense, Expense, Member, Recurring, Scheduled, Settings } from '../models/models';
+import { CAT_COLORS, CAT_ICONS, CAT_LABELS, CAT_FORM_LABELS, memberColor } from './i18n';
 
 export const FREQ_MONTHS: Record<string, number> = { mensile: 1, bimestrale: 2, trimestrale: 3, semestrale: 6, annuale: 12 };
 export const BUILTIN_COMMON = ['common', 'risparmio', 'variabile', 'extra'];
-const BUILTIN_IDS = ['common', 'risparmio', 'variabile', 'riccardo', 'valentina', 'extra'];
+
+// Riferimenti membro: payer 'u{id}', categoria personale 'p{id}'.
+export function memberPayerRef(id: number): string { return 'u' + id; }
+export function memberCatRef(id: number): string { return 'p' + id; }
+function isMemberCat(id: string): boolean { return /^p\d+$/.test(id); }
 
 export function monthKey(y: number, m: number): string {
   return `${y}-${String(m + 1).padStart(2, '0')}`;
@@ -17,8 +21,14 @@ export function customCatRef(c: CustomCategory): string {
   return 'c' + c.id;
 }
 
-export function allCatIds(cats: CustomCategory[]): string[] {
-  return [...BUILTIN_IDS, ...cats.map(customCatRef)];
+// Ordine categorie: comuni fisse, poi una "personale" per membro, poi extra e custom.
+export function allCatIds(cats: CustomCategory[], members: Member[]): string[] {
+  return [
+    'common', 'risparmio', 'variabile',
+    ...members.map(m => memberCatRef(m.id)),
+    'extra',
+    ...cats.map(customCatRef),
+  ];
 }
 
 export function catIsCommon(id: string, cats: CustomCategory[]): boolean {
@@ -28,25 +38,40 @@ export function catIsCommon(id: string, cats: CustomCategory[]): boolean {
 }
 
 export function catClassFor(id: string): string {
-  if (['common', 'risparmio', 'riccardo', 'valentina', 'extra'].includes(id)) return id;
   if (id === 'variabile') return 'common';
+  if (['common', 'risparmio', 'extra'].includes(id)) return id;
+  if (isMemberCat(id)) return 'member';
   return 'custom';
 }
 
-export function catLabel(id: string, cats: CustomCategory[]): string {
+export function catLabel(id: string, cats: CustomCategory[], members: Member[]): string {
   if (CAT_LABELS[id]) return CAT_LABELS[id];
+  if (isMemberCat(id)) {
+    const m = members.find(x => memberCatRef(x.id) === id);
+    return m ? `Personali ${m.displayName}` : 'Personali';
+  }
   const c = cats.find(x => customCatRef(x) === id);
   return c ? c.label : id;
 }
 
-export function catFormLabel(id: string, cats: CustomCategory[]): string {
-  return CAT_FORM_LABELS[id] || catLabel(id, cats);
+export function catFormLabel(id: string, cats: CustomCategory[], members: Member[]): string {
+  return CAT_FORM_LABELS[id] || catLabel(id, cats, members);
 }
 
 export function catIcon(id: string, cats: CustomCategory[]): string {
   if (CAT_ICONS[id]) return CAT_ICONS[id];
+  if (isMemberCat(id)) return 'ti-user';
   const c = cats.find(x => customCatRef(x) === id);
   return c && c.icon ? c.icon : 'ti-tag';
+}
+
+// Colore della categoria: fisse da CAT_COLORS, personali dalla palette membro per indice.
+export function catColor(id: string, cats: CustomCategory[], members: Member[]): string {
+  if (isMemberCat(id)) {
+    const idx = members.findIndex(m => memberCatRef(m.id) === id);
+    return idx >= 0 ? memberColor(idx) : CAT_COLORS['custom'];
+  }
+  return CAT_COLORS[catClassFor(id)] || CAT_COLORS['custom'];
 }
 
 export function recurringInMonth(r: Recurring, mk: string): boolean {
@@ -87,23 +112,25 @@ export function getProjectedExpenses(mk: string, expenses: Expense[], recurrings
   return result;
 }
 
-export interface Contrib {
-  totalCommon: number; dR: number; dV: number; paidR: number; paidV: number; saldoR: number; saldoV: number;
-}
+// Contributo per singolo membro alle spese comuni del mese.
+export interface MemberContrib { id: number; name: string; due: number; paid: number; saldo: number; }
+export interface Contrib { totalCommon: number; members: MemberContrib[]; }
 
-export function computeContrib(exps: DisplayExpense[], settings: Settings, cats: CustomCategory[]): Contrib {
-  const tot = settings.redditoR + settings.redditoV;
+export function computeContrib(exps: DisplayExpense[], settings: Settings, cats: CustomCategory[], members: Member[]): Contrib {
   const totalCommon = exps.filter(e => catIsCommon(e.cat, cats)).reduce((a, e) => a + e.amount, 0);
-  let dR: number, dV: number;
-  if (settings.model === 'prop') {
-    const p = tot > 0 ? settings.redditoR / tot : 0.5;
-    dR = totalCommon * p; dV = totalCommon * (1 - p);
-  } else {
-    dR = totalCommon / 2; dV = totalCommon / 2;
-  }
-  const paidR = exps.filter(e => e.payer === 'riccardo' && catIsCommon(e.cat, cats)).reduce((a, e) => a + e.amount, 0);
-  const paidV = exps.filter(e => e.payer === 'valentina' && catIsCommon(e.cat, cats)).reduce((a, e) => a + e.amount, 0);
-  return { totalCommon, dR, dV, paidR, paidV, saldoR: paidR - dR, saldoV: paidV - dV };
+  const totalIncome = members.reduce((a, m) => a + m.monthlyIncome, 0);
+  const n = members.length;
+  const list = members.map(m => {
+    // 'prop' divide in proporzione al reddito; '5050'/'unico' in parti uguali.
+    const due = settings.model === 'prop' && totalIncome > 0
+      ? totalCommon * (m.monthlyIncome / totalIncome)
+      : (n > 0 ? totalCommon / n : 0);
+    const paid = exps
+      .filter(e => e.payer === memberPayerRef(m.id) && catIsCommon(e.cat, cats))
+      .reduce((a, e) => a + e.amount, 0);
+    return { id: m.id, name: m.displayName, due, paid, saldo: paid - due };
+  });
+  return { totalCommon, members: list };
 }
 
 export function fmt(n: number): string {

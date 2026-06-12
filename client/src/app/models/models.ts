@@ -9,17 +9,22 @@ export interface AuthResponse {
   joinCode: string;
 }
 
+// Un membro del nucleo = un utente, con il proprio reddito mensile.
+export interface Member {
+  id: number;
+  displayName: string;
+  monthlyIncome: number;
+}
+
 export interface ModelLogEntry {
   date: string;
   model: string;
   modelLabel: string;
-  redditoR: number;
-  redditoV: number;
+  // Snapshot {nome: reddito} dei membri al momento del cambio.
+  incomesJson: string;
 }
 
 export interface Settings {
-  redditoR: number;
-  redditoV: number;
   risparmio: number;
   model: string;
   modelLog: ModelLogEntry[];
