@@ -1,6 +1,11 @@
 # Stato refactor CasaFinanze (.NET + Angular) — handoff
 
-Branch: **`refactor/dotnet-angular`** (la vecchia app vanilla resta su `main` + GitHub Pages, intatta).
+> **Documento storico.** Il refactor è **concluso e in produzione**: `main` è l'app
+> .NET + Angular su Azure (la vecchia app vanilla e GitHub Pages non sono più attivi).
+> Per lo stato attuale (architettura, sviluppo locale, deploy, versionamento) vedi il
+> [README](README.md). Evoluzioni successive: versionamento release-please (v1.0.0+),
+> dark mode (v1.1.0), nucleo multi-membro al posto del cablaggio Riccardo/Valentina (v1.2.0),
+> swipe cambio mese. Quanto segue è la cronistoria del refactor iniziale.
 
 ## Dove siamo arrivati
 
