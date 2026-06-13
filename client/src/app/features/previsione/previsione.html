@@ -1,6 +1,10 @@
 <div class="screen">
-  <div class="section-title" style="padding:0 .25rem">Prossimi 6 mesi</div>
+  <div class="section-title" style="padding:0 .25rem">Prossimi {{ horizon() }} mesi</div>
   <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.75rem">Saldo del conto comune proiettato su ricorrenti + programmate</div>
+
+  <div class="previsione-card" style="margin-bottom:.75rem">
+    <app-months-selector label="Orizzonte" [(value)]="horizon" />
+  </div>
 
   @let anc = anchor();
   <!-- Allineamento: l'utente fissa quanto c'è davvero in conto ora; da qui parte la previsione. -->
@@ -21,7 +25,7 @@
 
   @let saldo = saldoFinale();
   <div class="previsione-card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
-    <span style="font-size:13px;color:var(--color-text-secondary)">Saldo proiettato a 6 mesi</span>
+    <span style="font-size:13px;color:var(--color-text-secondary)">Saldo proiettato a {{ horizon() }} mesi</span>
     <strong class="prev-surplus" style="margin:0" [style.color]="saldo >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ saldo >= 0 ? '' : '– ' }}{{ fmt(abs(saldo)) }}</strong>
   </div>
 

@@ -4,10 +4,13 @@ import { ApiService } from '../../core/api.service';
 import { DataStore } from '../../core/data-store';
 import { catColor, catLabel, fmt, fmtDec, getProjectedExpenses, monthKey } from '../../util/finance-calc';
 import { MONTHS } from '../../util/i18n';
+import { MonthsSelector } from '../../shared/months-selector';
+
+const HORIZON_KEY = 'casafinanze_graf_months';
 
 @Component({
   selector: 'app-grafici',
-  imports: [],
+  imports: [MonthsSelector],
   templateUrl: './grafici.html',
 })
 export class Grafici {
@@ -15,6 +18,9 @@ export class Grafici {
   private api = inject(ApiService);
   fmtDec = fmtDec;
   fmt = fmt;
+
+  // Orizzonte in mesi (passato per l'andamento, futuro per l'avanzo), ricordato fra le sessioni.
+  horizon = signal<number>(Number(localStorage.getItem(HORIZON_KEY)) || 6);
 
   // Totali reali degli ultimi 6 mesi (caricati dall'API, perché lo store tiene solo il mese corrente).
   private monthsTotals = signal<{ label: string; total: number }[]>([]);
@@ -24,13 +30,15 @@ export class Grafici {
   private readonly padT = 18; private readonly padB = 28; private readonly padL = 4; private readonly padR = 4;
 
   constructor() {
-    // Ricarica il trend quando cambia il mese visualizzato.
-    effect(() => { this.ds.year(); this.ds.month(); this.loadTrend(); });
+    // Ricarica il trend quando cambia il mese visualizzato o l'orizzonte scelto.
+    effect(() => { this.ds.year(); this.ds.month(); this.loadTrend(this.horizon()); });
+    // Ricorda la scelta dell'orizzonte fra le sessioni.
+    effect(() => localStorage.setItem(HORIZON_KEY, String(this.horizon())));
   }
 
-  private loadTrend(): void {
+  private loadTrend(months: number): void {
     const mks: { mk: string; label: string }[] = [];
-    for (let i = 5; i >= 0; i--) {
+    for (let i = months - 1; i >= 0; i--) {
       let y = this.ds.year(), m = this.ds.month() - i;
       while (m < 0) { m += 12; y--; }
       mks.push({ mk: monthKey(y, m), label: MONTHS[m].slice(0, 3) });
@@ -72,7 +80,7 @@ export class Grafici {
 
     const pts: { mk: string; label: string; surplus: number; cum: number }[] = [];
     let cum = 0;
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < this.horizon(); i++) {
       let y = now.getFullYear(), m = now.getMonth() + i;
       while (m > 11) { m -= 12; y++; }
       const mk = monthKey(y, m);

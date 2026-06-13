@@ -1,10 +1,14 @@
 <div class="screen">
-  <div class="section-title" style="padding:0 .25rem">Avanzo previsto · prossimi 6 mesi</div>
+  <div class="previsione-card" style="margin-bottom:.75rem">
+    <app-months-selector label="Orizzonte" [(value)]="horizon" />
+  </div>
+
+  <div class="section-title" style="padding:0 .25rem">Avanzo previsto · prossimi {{ horizon() }} mesi</div>
   <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.5rem">Soldi avanzati cumulati (entrate − uscite stimate) in base alle spese inserite ad oggi</div>
 
   <div class="previsione-card">
     @let fc = forecast();
-    <svg [attr.viewBox]="'0 0 ' + fc.W + ' ' + fc.H" width="100%" role="img" aria-label="Avanzo cumulato previsto prossimi 6 mesi">
+    <svg [attr.viewBox]="'0 0 ' + fc.W + ' ' + fc.H" width="100%" role="img" [attr.aria-label]="'Avanzo cumulato previsto prossimi ' + horizon() + ' mesi'">
       <polygon [attr.points]="fc.areaPts" [attr.fill]="fc.finalPositive ? '#2D7D6F' : '#E24B4A'" fill-opacity="0.12"></polygon>
       <line [attr.x1]="fc.padL" [attr.y1]="fc.zeroY" [attr.x2]="fc.W - fc.padR" [attr.y2]="fc.zeroY" stroke="var(--color-text-secondary)" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"></line>
       <polyline [attr.points]="fc.linePts" fill="none" [attr.stroke]="fc.finalPositive ? '#2D7D6F' : '#E24B4A'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>
@@ -15,16 +19,16 @@
       }
     </svg>
     <div class="prev-surplus" style="text-align:center;margin-top:.25rem" [style.color]="fc.finalPositive ? 'var(--c-teal)' : '#E24B4A'">
-      Avanzo a 6 mesi: {{ fc.finalPositive ? '+ ' : '– ' }}{{ fmt(fc.finalCum < 0 ? -fc.finalCum : fc.finalCum) }}
+      Avanzo a {{ horizon() }} mesi: {{ fc.finalPositive ? '+ ' : '– ' }}{{ fmt(fc.finalCum < 0 ? -fc.finalCum : fc.finalCum) }}
     </div>
   </div>
 
-  <div class="section-title" style="padding:0 .25rem">Andamento ultimi 6 mesi</div>
+  <div class="section-title" style="padding:0 .25rem">Andamento ultimi {{ horizon() }} mesi</div>
   <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.5rem">Uscite registrate per mese · linea = entrate</div>
 
   <div class="previsione-card">
     @let ch = chart();
-    <svg [attr.viewBox]="'0 0 ' + ch.W + ' ' + ch.H" width="100%" role="img" aria-label="Andamento uscite ultimi 6 mesi">
+    <svg [attr.viewBox]="'0 0 ' + ch.W + ' ' + ch.H" width="100%" role="img" [attr.aria-label]="'Andamento uscite ultimi ' + horizon() + ' mesi'">
       @if (ch.lineY !== null) {
         <line [attr.x1]="ch.padL" [attr.y1]="ch.lineY" [attr.x2]="ch.W - ch.padR" [attr.y2]="ch.lineY" stroke="#E07A2F" stroke-width="1" stroke-dasharray="4 3"></line>
       }

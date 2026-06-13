@@ -1,11 +1,14 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { DataStore } from '../../core/data-store';
 import { getProjectedExpenses, monthKey, projectBalance, totalIncomeFor, fmt } from '../../util/finance-calc';
 import { MONTHS } from '../../util/i18n';
+import { MonthsSelector } from '../../shared/months-selector';
+
+const HORIZON_KEY = 'casafinanze_prev_months';
 
 @Component({
   selector: 'app-previsione',
-  imports: [],
+  imports: [MonthsSelector],
   templateUrl: './previsione.html',
 })
 export class Previsione {
@@ -15,6 +18,13 @@ export class Previsione {
 
   // Mese corrente come chiave 'yyyy-MM'.
   private nowMk = monthKey(new Date().getFullYear(), new Date().getMonth());
+
+  // Orizzonte di previsione in mesi: scelto dall'utente e ricordato fra le sessioni.
+  horizon = signal<number>(Number(localStorage.getItem(HORIZON_KEY)) || 6);
+
+  constructor() {
+    effect(() => localStorage.setItem(HORIZON_KEY, String(this.horizon())));
+  }
 
   // Ancora più recente non successiva al mese corrente: il saldo reale del conto comune
   // da cui la previsione parte e si trascina. null = nessun allineamento impostato.
@@ -32,7 +42,7 @@ export class Previsione {
   cards = computed(() => {
     // Reddito per-mese: somma dei redditi effettivi dei membri in quel mese (carry-forward).
     const incomeFor = (mk: string) => totalIncomeFor(this.ds.members(), mk, this.ds.memberIncomes());
-    const fc = projectBalance(this.nowMk, 6, this.anchor(), incomeFor, this.ds.expenses(), this.ds.recurrings(), this.ds.scheduleds());
+    const fc = projectBalance(this.nowMk, this.horizon(), this.anchor(), incomeFor, this.ds.expenses(), this.ds.recurrings(), this.ds.scheduleds());
     return fc.map(c => {
       const [y, m] = c.mk.split('-').map(Number);
       // recCount = quante voci proiettate (ric./prog.) nel mese, per il badge.
