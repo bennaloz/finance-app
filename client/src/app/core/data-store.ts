@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, forkJoin, tap } from 'rxjs';
-import { CustomCategory, DisplayExpense, Expense, Member, Recurring, Scheduled, Settings } from '../models/models';
-import { getProjectedExpenses } from '../util/finance-calc';
+import { Alignment, CustomCategory, DisplayExpense, Expense, Member, MemberIncome, Recurring, Scheduled, Settings } from '../models/models';
+import { getProjectedExpenses, memberIncomeFor } from '../util/finance-calc';
 import { ApiService } from './api.service';
 
 // Stato dell'app (online-first): tiene il mese corrente e i dati scaricati dall'API.
@@ -14,6 +14,8 @@ export class DataStore {
   expenses = signal<Expense[]>([]);
   recurrings = signal<Recurring[]>([]);
   scheduleds = signal<Scheduled[]>([]);
+  alignments = signal<Alignment[]>([]);
+  memberIncomes = signal<MemberIncome[]>([]);
   categories = signal<CustomCategory[]>([]);
   members = signal<Member[]>([]);
   settings = signal<Settings>({ risparmio: 0, model: '5050', modelLog: [] });
@@ -24,10 +26,17 @@ export class DataStore {
   usciteRecOpen = signal(false);
   usciteSchedOpen = signal(false);
 
-  // Reddito totale del nucleo = somma dei redditi dei membri (sostituisce redditoR+redditoV).
-  totalIncome = computed(() => this.members().reduce((a, m) => a + m.monthlyIncome, 0));
-
   monthKey = computed(() => `${this.year()}-${String(this.month() + 1).padStart(2, '0')}`);
+
+  // Membri col reddito EFFETTIVO del mese selezionato (override datato con carry-forward,
+  // altrimenti il reddito base). Così divisione e totali ereditano il reddito del mese.
+  monthMembers = computed(() => this.members().map(m => ({
+    ...m, monthlyIncome: memberIncomeFor(m, this.monthKey(), this.memberIncomes()),
+  })));
+
+  // Reddito totale del nucleo per il mese selezionato.
+  totalIncome = computed(() => this.monthMembers().reduce((a, m) => a + m.monthlyIncome, 0));
+
   projected = computed(() => getProjectedExpenses(this.monthKey(), this.expenses(), this.recurrings(), this.scheduleds()));
 
   changeMonth(dir: number): void {
@@ -43,6 +52,8 @@ export class DataStore {
     forkJoin({
       recurrings: this.api.getRecurrings(),
       scheduleds: this.api.getScheduleds(),
+      alignments: this.api.getAlignments(),
+      memberIncomes: this.api.getMemberIncomes(),
       categories: this.api.getCategories(),
       settings: this.api.getSettings(),
       members: this.api.getMembers(),
@@ -50,6 +61,8 @@ export class DataStore {
     }).subscribe(r => {
       this.recurrings.set(r.recurrings);
       this.scheduleds.set(r.scheduleds);
+      this.alignments.set(r.alignments);
+      this.memberIncomes.set(r.memberIncomes);
       this.categories.set(r.categories);
       this.settings.set(r.settings);
       this.members.set(r.members);
@@ -61,6 +74,8 @@ export class DataStore {
   loadMonth(): void { this.api.getExpenses(this.monthKey()).subscribe(e => this.expenses.set(e)); }
   reloadRecurrings(): void { this.api.getRecurrings().subscribe(r => this.recurrings.set(r)); }
   reloadScheduleds(): void { this.api.getScheduleds().subscribe(s => this.scheduleds.set(s)); }
+  reloadAlignments(): void { this.api.getAlignments().subscribe(a => this.alignments.set(a)); }
+  reloadMemberIncomes(): void { this.api.getMemberIncomes().subscribe(m => this.memberIncomes.set(m)); }
   reloadCategories(): void { this.api.getCategories().subscribe(c => this.categories.set(c)); }
   reloadSettings(): void { this.api.getSettings().subscribe(s => this.settings.set(s)); }
   reloadMembers(): void { this.api.getMembers().subscribe(m => this.members.set(m)); }
@@ -105,6 +120,16 @@ export class DataStore {
 
   deleteScheduledById(id: number): Observable<unknown> {
     return this.api.deleteScheduled(id).pipe(tap(() => { this.reloadScheduleds(); this.loadMonth(); }));
+  }
+
+  // Fissa il saldo reale del conto comune per un mese (upsert lato API).
+  setAlignment(month: string, amount: number): Observable<Alignment> {
+    return this.api.setAlignment({ month, amount }).pipe(tap(() => this.reloadAlignments()));
+  }
+
+  // Fissa il reddito di un membro per un mese (upsert; carry-forward sui mesi successivi).
+  setMemberIncome(userId: number, month: string, amount: number): Observable<MemberIncome> {
+    return this.api.setMemberIncome({ userId, month, amount }).pipe(tap(() => this.reloadMemberIncomes()));
   }
 
   addCategory(c: { label: string; common: boolean; icon?: string }): Observable<CustomCategory> {

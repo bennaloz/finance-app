@@ -1,11 +1,32 @@
 <div class="screen">
-  <div class="section-title" style="padding:0 .25rem">Prossimi 6 mesi</div>
-  <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.75rem">Proiezione basata su ricorrenti + programmate</div>
+  <div class="section-title" style="padding:0 .25rem">Prossimi {{ horizon() }} mesi</div>
+  <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.75rem">Saldo del conto comune proiettato su ricorrenti + programmate</div>
 
-  @let tot = totalSurplus();
+  <div class="previsione-card" style="margin-bottom:.75rem">
+    <app-months-selector label="Orizzonte" [(value)]="horizon" />
+  </div>
+
+  @let anc = anchor();
+  <!-- Allineamento: l'utente fissa quanto c'è davvero in conto ora; da qui parte la previsione. -->
+  <div class="previsione-card" style="margin-bottom:.75rem">
+    <div style="font-size:13px;font-weight:600;margin-bottom:.4rem">Saldo del conto comune oggi</div>
+    @if (anc) {
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.5rem">Allineato a {{ fmt(anc.amount) }} — aggiornalo quando vuoi.</div>
+    } @else {
+      <div style="font-size:12px;color:var(--c-amber);margin-bottom:.5rem">Nessun allineamento: la previsione parte da 0. Inserisci quanto avete in conto.</div>
+    }
+    <input type="text" inputmode="decimal" placeholder="es. 1500" class="field-input" [value]="saldoInput()"
+           (input)="saldoInput.set($any($event.target).value)"
+           style="width:100%" />
+    <button class="btn-primary" [disabled]="saving()" (click)="setAnchor()">{{ saving() ? 'Salvataggio…' : 'Fissa saldo' }}</button>
+    @if (savedMsg()) { <div style="font-size:12px;color:var(--c-teal);margin-top:.4rem">Salvato ✓</div> }
+    @if (errorMsg()) { <div style="font-size:12px;color:#E24B4A;margin-top:.4rem">{{ errorMsg() }}</div> }
+  </div>
+
+  @let saldo = saldoFinale();
   <div class="previsione-card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
-    <span style="font-size:13px;color:var(--color-text-secondary)">Avanzo totale a 6 mesi</span>
-    <strong class="prev-surplus" style="margin:0" [style.color]="tot >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ tot >= 0 ? '+ ' : '– ' }}{{ fmt(abs(tot)) }}</strong>
+    <span style="font-size:13px;color:var(--color-text-secondary)">Saldo proiettato a {{ horizon() }} mesi</span>
+    <strong class="prev-surplus" style="margin:0" [style.color]="saldo >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ saldo >= 0 ? '' : '– ' }}{{ fmt(abs(saldo)) }}</strong>
   </div>
 
   @for (c of cards(); track c.label) {
@@ -15,9 +36,10 @@
         @if (c.recCount > 0) { <span class="pill pill-rec">{{ c.recCount }} ric.</span> }
       </div>
       <div class="prev-bar-wrap"><div class="prev-bar-fill" [style.width.%]="c.pct" [style.background]="c.barColor"></div></div>
-      <div class="prev-row"><span>Uscite stimate</span><strong>{{ fmt(c.total) }}</strong></div>
-      <div class="prev-row"><span>Entrate</span><strong>{{ fmt(c.totR) }}</strong></div>
-      <div class="prev-surplus" [style.color]="c.surplus >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ c.surplus >= 0 ? '+ ' : '– ' }}{{ fmt(abs(c.surplus)) }}</div>
+      <div class="prev-row"><span>Uscite stimate</span><strong>{{ fmt(c.outflow) }}</strong></div>
+      <div class="prev-row"><span>Entrate</span><strong>{{ fmt(c.income) }}</strong></div>
+      <div class="prev-row"><span>Disponibile da girare sul personale</span><strong [style.color]="c.disponibile >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ c.disponibile >= 0 ? '' : '– ' }}{{ fmt(abs(c.disponibile)) }}</strong></div>
+      <div class="prev-surplus" [style.color]="c.endBalance >= 0 ? 'var(--c-teal)' : '#E24B4A'">Saldo a fine mese: {{ c.endBalance >= 0 ? '' : '– ' }}{{ fmt(abs(c.endBalance)) }}</div>
     </div>
   }
 </div>

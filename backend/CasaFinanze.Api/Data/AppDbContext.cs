@@ -15,6 +15,8 @@ public class AppDbContext : DbContext
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<Recurring> Recurrings => Set<Recurring>();
     public DbSet<Scheduled> Scheduleds => Set<Scheduled>();
+    public DbSet<Alignment> Alignments => Set<Alignment>();
+    public DbSet<MemberIncome> MemberIncomes => Set<MemberIncome>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -25,6 +27,10 @@ public class AppDbContext : DbContext
         b.Entity<Expense>().HasIndex(e => e.HouseholdId);
         b.Entity<Recurring>().HasIndex(e => e.HouseholdId);
         b.Entity<Scheduled>().HasIndex(e => e.HouseholdId);
+        // Un solo allineamento per (household, mese): il POST fa upsert.
+        b.Entity<Alignment>().HasIndex(e => new { e.HouseholdId, e.Month }).IsUnique();
+        // Un solo reddito per (household, membro, mese): il POST fa upsert.
+        b.Entity<MemberIncome>().HasIndex(e => new { e.HouseholdId, e.UserId, e.Month }).IsUnique();
         b.Entity<CustomCategory>().HasIndex(e => e.HouseholdId);
         b.Entity<ModelLogEntry>().HasIndex(e => e.HouseholdId);
     }

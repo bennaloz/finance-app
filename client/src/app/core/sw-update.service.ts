@@ -13,6 +13,10 @@ export class SwUpdateService {
   // true quando una nuova versione è stata scaricata ed è pronta da attivare.
   readonly updateReady = signal(false);
 
+  // true mentre l'aggiornamento è in corso (dal tap su "Aggiorna" fino al reload),
+  // per dare un feedback ed evitare doppi tap.
+  readonly updating = signal(false);
+
   init(): void {
     // In sviluppo il service worker è disabilitato: non c'è nulla da controllare.
     if (!this.swUpdate.isEnabled) return;
@@ -35,6 +39,8 @@ export class SwUpdateService {
 
   // Attiva la nuova versione e ricarica l'app.
   async applyUpdate(): Promise<void> {
+    if (this.updating()) return;
+    this.updating.set(true);
     try {
       await this.swUpdate.activateUpdate();
     } finally {

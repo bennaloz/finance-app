@@ -63,6 +63,21 @@ export interface Scheduled {
   month: string;       // yyyy-MM
 }
 
+// Ancora di saldo del conto comune per un mese: da qui parte la Previsione.
+export interface Alignment {
+  id: number;
+  month: string;       // yyyy-MM
+  amount: number;
+}
+
+// Reddito di un membro per un mese specifico (override datato, con carry-forward).
+export interface MemberIncome {
+  id: number;
+  userId: number;
+  month: string;       // yyyy-MM
+  amount: number;
+}
+
 export interface CustomCategory {
   id: number;
   label: string;

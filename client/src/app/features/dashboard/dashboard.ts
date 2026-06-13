@@ -1,6 +1,7 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { DataStore } from '../../core/data-store';
 import { DisplayExpense } from '../../models/models';
 import { computeContrib, fmt } from '../../util/finance-calc';
@@ -20,10 +21,42 @@ export class Dashboard {
 
   private exps = computed(() => this.ds.projected());
 
+  // Editor inline delle entrate del mese (reddito per-membro, datato con carry-forward).
+  editingIncome = signal(false);
+  savingIncome = signal(false);
+  incomeError = signal('');
+  incomeDraft = signal<Record<number, string>>({});
+
+  toggleEditIncome(): void {
+    if (this.editingIncome()) { this.editingIncome.set(false); return; }
+    // Prefill con il reddito effettivo del mese mostrato.
+    const draft: Record<number, string> = {};
+    for (const m of this.ds.monthMembers()) draft[m.id] = String(m.monthlyIncome);
+    this.incomeDraft.set(draft);
+    this.editingIncome.set(true);
+  }
+
+  setDraft(id: number, value: string): void {
+    this.incomeDraft.update(d => ({ ...d, [id]: value }));
+  }
+
+  saveIncome(): void {
+    const draft = this.incomeDraft();
+    const month = this.ds.monthKey();
+    const calls = this.ds.members().map(m => this.ds.setMemberIncome(m.id, month, Number((draft[m.id] ?? '').replace(',', '.')) || 0));
+    if (!calls.length) { this.editingIncome.set(false); return; }
+    this.incomeError.set('');
+    this.savingIncome.set(true);
+    forkJoin(calls).subscribe({
+      next: () => { this.savingIncome.set(false); this.editingIncome.set(false); },
+      error: () => { this.savingIncome.set(false); this.incomeError.set('Salvataggio non riuscito. Riprova.'); },
+    });
+  }
+
   vm = computed(() => {
     const exps = this.exps();
     const s = this.ds.settings();
-    const members = this.ds.members();
+    const members = this.ds.monthMembers();
     const totR = this.ds.totalIncome();
     const confirmed = exps.filter(e => !e.projected);
     const projected = exps.filter(e => e.projected);

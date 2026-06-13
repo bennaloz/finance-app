@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { CustomCategory, Expense, Member, Recurring, Scheduled, Settings } from '../models/models';
+import { Alignment, CustomCategory, Expense, Member, MemberIncome, Recurring, Scheduled, Settings } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -22,6 +22,12 @@ export class ApiService {
   getScheduleds() { return this.http.get<Scheduled[]>(`${this.base}/api/scheduled`); }
   createScheduled(s: Partial<Scheduled>) { return this.http.post<Scheduled>(`${this.base}/api/scheduled`, s); }
   deleteScheduled(id: number) { return this.http.delete(`${this.base}/api/scheduled/${id}`); }
+
+  getAlignments() { return this.http.get<Alignment[]>(`${this.base}/api/alignment`); }
+  setAlignment(a: { month: string; amount: number }) { return this.http.post<Alignment>(`${this.base}/api/alignment`, a); }
+
+  getMemberIncomes() { return this.http.get<MemberIncome[]>(`${this.base}/api/memberincome`); }
+  setMemberIncome(i: { userId: number; month: string; amount: number }) { return this.http.post<MemberIncome>(`${this.base}/api/memberincome`, i); }
 
   getSettings() { return this.http.get<Settings>(`${this.base}/api/settings`); }
   updateSettings(s: { risparmio: number; model: string; modelLabel?: string }) {
