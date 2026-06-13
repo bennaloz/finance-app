@@ -1,9 +1,59 @@
 <div class="screen">
-  <div class="section-title" style="padding:0 .25rem">Tutte le uscite</div>
-  @if (expenses().length === 0) {
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <i class="ti ti-search" aria-hidden="true"></i>
+      <input type="search" class="search-input" placeholder="Cerca per nome, categoria…"
+             [(ngModel)]="search" aria-label="Cerca tra le uscite">
+      @if (search()) {
+        <button type="button" class="search-clear" (click)="search.set('')" aria-label="Pulisci ricerca"><i class="ti ti-x" aria-hidden="true"></i></button>
+      }
+    </div>
+    <button type="button" class="btn-small ghost filter-toggle" [class.active]="filtersOpen() || filtersActive()"
+            (click)="filtersOpen.set(!filtersOpen())" [attr.aria-expanded]="filtersOpen()" aria-label="Filtri avanzati">
+      <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i> Filtri
+    </button>
+  </div>
+
+  @if (filtersOpen()) {
+    <div class="filter-panel">
+      <div class="form-row">
+        <label>Categoria</label>
+        <select [(ngModel)]="catFilter">
+          <option value="">Tutte le categorie</option>
+          @for (c of catOptions(); track c.id) {
+            <option [value]="c.id">{{ c.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-row-2">
+        <div class="form-row" style="margin-bottom:0">
+          <label>Prezzo min</label>
+          <input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" [(ngModel)]="minPrice">
+        </div>
+        <div class="form-row" style="margin-bottom:0">
+          <label>Prezzo max</label>
+          <input type="number" inputmode="decimal" min="0" step="0.01" placeholder="nessuno" [(ngModel)]="maxPrice">
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="section-title list-head">
+    <span>Tutte le uscite</span>
+    @if (filtersActive()) {
+      <button type="button" class="btn-small ghost" (click)="resetFilters()"><i class="ti ti-x" aria-hidden="true"></i> Azzera</button>
+    }
+  </div>
+
+  @if (totalCount() === 0) {
     <div class="empty-state">
       <i class="ti ti-receipt" aria-hidden="true"></i>
       <p>Nessuna uscita registrata<br>per questo mese</p>
+    </div>
+  } @else if (expenses().length === 0) {
+    <div class="empty-state">
+      <i class="ti ti-filter-off" aria-hidden="true"></i>
+      <p>Nessuna uscita corrisponde<br>ai filtri selezionati</p>
     </div>
   } @else {
     <div class="expense-list">

@@ -58,7 +58,7 @@ membro (solo `displayName`/`email`). Serve per attribuire le spese personali (`u
   (`ExpenseInput`: Desc, Amount, Cat, Payer, Date, Tipo, RecurringId, ScheduledId; HouseholdId dai claim).
 - Routing (figli di `Layout`, `authGuard`): `client/src/app/app.routes.ts`
 - Shell senza pulsante "+": `client/src/app/layout/layout.html` / `layout.ts`
-  (riusare il pattern `monthSwipeEnabled` per la visibilità del FAB).
+  (per la visibilità del FAB derivare dal path della route corrente, come `title`).
 - Riferimenti membro/categoria: `client/src/app/util/finance-calc.ts`
   `memberPayerRef(id)='u'+id`, `memberCatRef(id)='p'+id`, `allCatIds`, `catFormLabel`.
   Categorie fisse: `common`, `variabile`, `risparmio`, `extra` (+ personali `p{id}`, custom).
