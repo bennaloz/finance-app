@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.4.0](https://github.com/bennaloz/finance-app/compare/v1.3.0...v1.4.0) (2026-06-13)
+
+
+### Features
+
+* cold start spinner, orizzonte mesi configurabile e fix UX ([5d029c1](https://github.com/bennaloz/finance-app/commit/5d029c1e2151fa9f71055f07393164d845a65a50))
+* orizzonte in mesi configurabile per previsione e grafici ([515b558](https://github.com/bennaloz/finance-app/commit/515b558938c16566b6e51d3b9cd8283533fef9b3))
+* overlay di caricamento globale per il cold start del backend ([4100759](https://github.com/bennaloz/finance-app/commit/410075945bcaeed52e870d5cd94a2d8126e8699e))
+* previsione del conto comune con allineamento e reddito mensile ([289abd4](https://github.com/bennaloz/finance-app/commit/289abd45432337c9d318312ad4445cb852dcbe6f))
+
+
+### Bug Fixes
+
+* blocca lo zoom, evita l'overflow orizzontale e mostra feedback in aggiornamento ([f14ff61](https://github.com/bennaloz/finance-app/commit/f14ff61e899a641072b3a10ce857d86a830ef50b))
+* casella saldo a tutta larghezza in Previsione ([9b22e09](https://github.com/bennaloz/finance-app/commit/9b22e0941acdb1ed441da440d37851451d6805d9))
+* combo orizzonte allineata al valore reale al primo caricamento ([6be5aa3](https://github.com/bennaloz/finance-app/commit/6be5aa3e0609a04ce30bb1fa3b71c09f18e293dd))
+* feedback visibile su salvataggio saldo ed entrate ([43c68ba](https://github.com/bennaloz/finance-app/commit/43c68ba987d31f21dc34051079a3388199e829ae))
+* rendi visibile la casella importo in Previsione e Dashboard ([ed86403](https://github.com/bennaloz/finance-app/commit/ed86403541ea5ebd0d8f04eacb9a289f1036a8d0))
+
 ## [1.3.0](https://github.com/bennaloz/finance-app/compare/v1.2.0...v1.3.0) (2026-06-12)
 
 
