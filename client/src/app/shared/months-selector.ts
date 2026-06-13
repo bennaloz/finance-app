@@ -11,10 +11,12 @@ import { Component, computed, input, model, signal } from '@angular/core';
   template: `
     <div class="ms">
       <span class="ms-label">{{ label() }}</span>
-      <select class="field-input ms-select" [value]="selectValue()"
+      <select class="field-input ms-select"
               (change)="onSelect($any($event.target).value)" aria-label="Numero di mesi">
-        @for (p of presets(); track p) { <option [value]="p">{{ p }} mesi</option> }
-        <option value="custom">Personalizzato…</option>
+        @for (p of presets(); track p) {
+          <option [value]="p" [selected]="!isCustom() && value() === p">{{ p }} mesi</option>
+        }
+        <option value="custom" [selected]="isCustom()">Personalizzato…</option>
       </select>
       @if (isCustom()) {
         <input class="field-input ms-custom" type="number" inputmode="numeric"
@@ -44,7 +46,6 @@ export class MonthsSelector {
   private forceCustom = signal(false);
 
   isCustom = computed(() => this.forceCustom() || !this.presets().includes(this.value()));
-  selectValue = computed(() => (this.isCustom() ? 'custom' : String(this.value())));
 
   onSelect(v: string): void {
     if (v === 'custom') { this.forceCustom.set(true); return; }
