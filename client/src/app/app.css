@@ -1,0 +1,44 @@
+/* Overlay di caricamento globale (cold start dell'App Service e chiamate API lente). */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 20, 26, .45);
+  backdrop-filter: blur(2px);
+  animation: overlayIn .15s ease both;
+}
+.loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  max-width: 280px;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .25);
+}
+.loading-card .spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--color-border-secondary);
+  border-top-color: var(--c-teal);
+  animation: spin .7s linear infinite;
+}
+.loading-text { font-size: 14px; font-weight: 500; }
+.loading-sub { font-size: 12px; color: var(--color-text-secondary); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-overlay { animation: none; }
+  .loading-card .spinner { animation-duration: 1.6s; }
+}

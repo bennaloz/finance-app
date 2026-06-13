@@ -5,3 +5,15 @@
   </div>
 }
 <router-outlet />
+
+@if (showOverlay()) {
+  <div class="loading-overlay" role="status" aria-live="polite">
+    <div class="loading-card">
+      <span class="spinner" aria-hidden="true"></span>
+      <p class="loading-text">{{ slow() ? 'Avvio del server in corso…' : 'Caricamento…' }}</p>
+      @if (slow()) {
+        <p class="loading-sub">Al primo accesso può richiedere fino a un minuto.</p>
+      }
+    </div>
+  </div>
+}
