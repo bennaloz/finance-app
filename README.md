@@ -7,7 +7,7 @@ proporzionale al reddito, pot unico). PWA mobile-first in italiano.
 ## Architettura
 
 - **Client** (`client/`) — Angular 21 (standalone, signals), PWA con service worker.
-  Dark mode (Sistema/Chiaro/Scuro), swipe per cambiare mese.
+  Dark mode (Sistema/Chiaro/Scuro), navigazione mese dalla topbar.
 - **Backend** (`backend/CasaFinanze.Api/`) — .NET 10 Web API, EF Core + SQLite, auth JWT.
   Multi-tenant per `HouseholdId`; i membri di un nucleo sono gli utenti che vi accedono
   (registrazione o unione tramite **codice casa**), ciascuno con il proprio `MonthlyIncome`.
