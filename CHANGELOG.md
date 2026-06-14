@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.0](https://github.com/bennaloz/finance-app/compare/v1.4.0...v1.5.0) (2026-06-14)
+
+
+### Features
+
+* **movimenti:** filtri per le uscite e rimozione swipe mese ([b1af815](https://github.com/bennaloz/finance-app/commit/b1af8156f6ad3032dfdec7e857f1f64309e1d096))
+* **movimenti:** filtri uscite e rimozione swipe mese ([6ccdbcc](https://github.com/bennaloz/finance-app/commit/6ccdbccd13d005a76e041ff69fd118dfb5c7eddb))
+* **movimenti:** filtri uscite e rimozione swipe mese ([5fb5b74](https://github.com/bennaloz/finance-app/commit/5fb5b741eedf704b37518f950f6e65598c8b4e72))
+* **movimenti:** filtri uscite e rimozione swipe mese ([#25](https://github.com/bennaloz/finance-app/issues/25)) ([5fb5b74](https://github.com/bennaloz/finance-app/commit/5fb5b741eedf704b37518f950f6e65598c8b4e72))
+* **movimenti:** filtri uscite e rimozione swipe mese ([#26](https://github.com/bennaloz/finance-app/issues/26)) ([6ccdbcc](https://github.com/bennaloz/finance-app/commit/6ccdbccd13d005a76e041ff69fd118dfb5c7eddb))
+
 ## [1.4.0](https://github.com/bennaloz/finance-app/compare/v1.3.0...v1.4.0) (2026-06-13)
 
 
