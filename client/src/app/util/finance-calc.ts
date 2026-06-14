@@ -184,7 +184,11 @@ export function projectBalance(
 }
 
 // Contributo per singolo membro alle spese comuni del mese.
-export interface MemberContrib { id: number; name: string; due: number; paid: number; saldo: number; }
+// - due: quota delle spese comuni a carico del membro (secondo il modello scelto).
+// - paid: spese comuni che il membro ha pagato dal proprio conto.
+// - personal: spese personali del membro pagate dal CONTO COMUNE (le deve "restituire" al comune).
+// - saldo: paid - due - personal (positivo = a credito verso il comune).
+export interface MemberContrib { id: number; name: string; due: number; paid: number; personal: number; saldo: number; }
 export interface Contrib { totalCommon: number; members: MemberContrib[]; }
 
 export function computeContrib(exps: DisplayExpense[], settings: Settings, cats: CustomCategory[], members: Member[]): Contrib {
@@ -199,7 +203,12 @@ export function computeContrib(exps: DisplayExpense[], settings: Settings, cats:
     const paid = exps
       .filter(e => e.payer === memberPayerRef(m.id) && catIsCommon(e.cat, cats))
       .reduce((a, e) => a + e.amount, 0);
-    return { id: m.id, name: m.displayName, due, paid, saldo: paid - due };
+    // Spese personali del membro pagate dal conto comune: a suo carico, non divise.
+    // (Una personale pagata dal conto personale di un ALTRO membro resta neutra: caso raro.)
+    const personal = exps
+      .filter(e => e.cat === memberCatRef(m.id) && e.payer === 'comune')
+      .reduce((a, e) => a + e.amount, 0);
+    return { id: m.id, name: m.displayName, due, paid, personal, saldo: paid - due - personal };
   });
   return { totalCommon, members: list };
 }

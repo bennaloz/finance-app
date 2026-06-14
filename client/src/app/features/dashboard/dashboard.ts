@@ -66,10 +66,14 @@ export class Dashboard {
     const pct = totR > 0 ? Math.min((totalAll / totR) * 100, 100) : 0;
     const c = computeContrib(exps, s, this.ds.categories(), members);
     // Una riga di contribuzione per membro, con colore e % pagato/dovuto.
-    const contribRows = c.members.map((mc, i) => ({
-      ...mc, color: memberColor(i),
-      pct: Math.min(mc.due > 0 ? (mc.paid / mc.due) * 100 : 0, 100),
-    }));
+    const contribRows = c.members.map((mc, i) => {
+      // Dovuto effettivo = quota comune + personali pagate dal conto comune (a suo carico).
+      const dovuto = mc.due + mc.personal;
+      return {
+        ...mc, dovuto, color: memberColor(i),
+        pct: Math.min(dovuto > 0 ? (mc.paid / dovuto) * 100 : 0, 100),
+      };
+    });
     const incomeLine = members.map(m => `${m.displayName}: ${fmt(m.monthlyIncome)}`).join(' · ');
     const recent = [...exps].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
     return {

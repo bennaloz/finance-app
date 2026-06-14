@@ -69,7 +69,7 @@
       <div class="split-detail">
         @for (r of m.contribRows; track r.id; let last = $last) {
           <div class="split-row" [style.border]="last ? 'none' : null">
-            <span>{{ r.name }} — dovuto {{ fmt(r.due) }}</span>
+            <span>{{ r.name }} — dovuto {{ fmt(r.dovuto) }}@if (r.personal > 0) { <small style="color:var(--color-text-secondary)">(di cui {{ fmt(r.personal) }} personali)</small>}</span>
             <strong [style.color]="r.saldo >= 0 ? 'var(--c-teal)' : '#E24B4A'">{{ r.saldo >= 0 ? '+' : '' }}{{ fmt(r.saldo) }}</strong>
           </div>
         }
