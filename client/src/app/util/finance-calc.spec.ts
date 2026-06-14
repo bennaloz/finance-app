@@ -64,6 +64,24 @@ describe('finance-calc', () => {
     expect(r.paid).toBe(100);
     expect(r.saldo).toBe(50);  // ha pagato 100, doveva 50
     expect(v.saldo).toBe(-50);
+    expect(r.personal).toBe(0); // personale pagata dal proprio conto: nessun debito verso il comune
+  });
+
+  it('computeContrib: personale pagata dal conto comune resta a carico del singolo', () => {
+    const exps = [
+      { id: 1, desc: 'spesa', amount: 100, cat: 'variabile', payer: 'comune', date: '2026-03-01', tipo: 'singola' },
+      { id: 2, desc: 'scarpe', amount: 60, cat: 'p1', payer: 'comune', date: '2026-03-02', tipo: 'singola' }, // personale di Riccardo dal comune
+    ];
+    const c = computeContrib(exps, settings, [], members);
+    expect(c.totalCommon).toBe(100); // la personale non entra nelle comuni
+    const r = c.members.find(m => m.id === 1)!;
+    const v = c.members.find(m => m.id === 2)!;
+    expect(r.due).toBe(50);          // quota comune invariata (100 / 2)
+    expect(r.personal).toBe(60);     // le scarpe sono a suo carico
+    expect(r.paid).toBe(0);          // non ha pagato comuni dal proprio conto
+    expect(r.saldo).toBe(-110);      // 0 pagato - 50 dovuto - 60 personali
+    expect(v.personal).toBe(0);      // l'altro membro non è toccato
+    expect(v.saldo).toBe(-50);
   });
 
   it('addMonths: somma mesi attraversando l\'anno', () => {
